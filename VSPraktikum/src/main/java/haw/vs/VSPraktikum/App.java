@@ -3,6 +3,7 @@ import static spark.Spark.*;
 import org.json.JSONObject;
 import com.mashape.unirest.http.Unirest;
 import haw.vs.VSPraktikum.services.Dice;
+import haw.vs.VSPraktikum.services.Users;
 
 public class App {
 	private static final String YELLOW_PAGES = "http://172.18.0.5:4567/services";
@@ -10,6 +11,8 @@ public class App {
 	public static void main(String[] args) {
         get("/hello", (req, res) -> "Hello World");
 		get("/dice", Dice::roll);
+		
+		get("/userlist", Users::getUserlist);
 		
 		try{
 			JSONObject json = new JSONObject();
