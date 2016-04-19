@@ -1,33 +1,31 @@
 package haw.vs.VSPraktikum.util;
 
 public class User {
-	private int _id;
-	private String _name;
-	private String _uri;
+	private String id;
+	private String name;
+	private String uri;
 	
-	public User(int id, String name, String uri){
-		_id = id;
-		_name = name;
-		_uri = uri;
+	public User(String name, String uri){
+		this.id = "/users/" + name;
+		this.name = name;
+		this.uri = uri;
 	}
 	
-	public int getId() {
-		return _id;
+	public String getId() {
+		return this.id;
 	}
-	public void setId(int _id) {
-		this._id = _id;
-	}
+	
 	public String getName() {
-		return _name;
-	}
-	public void setName(String _name) {
-		this._name = _name;
-	}
-	public String getUri() {
-		return _uri;
-	}
-	public void setUri(String _uri) {
-		this._uri = _uri;
+		return this.name;
 	}
 	
+	// TODO: wird auch die ID geaendert?
+	public void setName(String name) {
+		this.name = name;
+		this.id = "/users/" + name;
+	}
+	
+	public String getUri() {
+		return this.uri;
+	}
 }

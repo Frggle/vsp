@@ -5,7 +5,7 @@ import static spark.Spark.get;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.json.JSONObject;
-
+import com.google.gson.Gson;
 import com.mashape.unirest.http.Unirest;
 
 import spark.Request;
@@ -21,17 +21,16 @@ public class Dice {
 			json.put("name", "DiceService");
 			json.put("description", "Gives you a single dice roll");
 			json.put("service", "dice");
-			json.put("uri", "http://abp154_docker_0:4567/dice"); // TODO: URI richtig ???
+			json.put("uri", "http://abp154_docker_0:4567/dice");
 			
 			System.err.println(json);
 			
-			String result = Unirest.post(YELLOW_PAGES + "/1337")
+			Unirest.post(YELLOW_PAGES + "/1337")
 					.header("Content-Type", "application/json")
 					.body(json)
 					.asString().getBody();	
 			
 			get("/dice", Dice::roll);
-			System.err.println("Result: " + result);
 		} catch (Exception e) {
 			//
 		}
@@ -42,11 +41,13 @@ public class Dice {
 		response.status(200);
 		response.type("application/json");
 		
+		Gson gson = new Gson();
+		
 		String player = request.queryParams("player");
 		String game = request.queryParams("game");
 		
 		Integer randomNumber = (Integer) ThreadLocalRandom.current().nextInt(1, 7);
 		String output = "{\"number\": " + randomNumber + "}";
-		return output;
+		return gson.toJson(output);
 	}
 }
