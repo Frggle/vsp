@@ -20,7 +20,7 @@ public class Dice {
 			json.put("uri", "http://abp154_docker_0:4567/dice");
 			
 			System.err.println(json);
-			
+		
 			Unirest.post(YELLOW_PAGES + "/1337").header("Content-Type", "application/json").body(json).asString().getBody();
 		} catch(Exception e) {
 			//

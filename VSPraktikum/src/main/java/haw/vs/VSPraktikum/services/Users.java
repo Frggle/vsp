@@ -11,12 +11,24 @@ import com.google.gson.JsonObject;
 import haw.vs.VSPraktikum.util.User;
 import org.eclipse.jetty.http.HttpStatus;
 
+/**
+ * Ein Service bei dem sich Benutzer registrieren können.
+ * @author Marc
+ *
+ */
 public class Users {
-	private static Map<String, User> usersMap = new HashMap<>(); // ID -> User
+	/* 
+	 * alle registrierten Benutzer
+	 * Abbildung von ID auf User Objekt 
+	 */
+	private static Map<String, User> usersMap = new HashMap<>();
 	
 	public static void main(String[] args) {
 		Gson gson = new Gson();
 		
+		/*
+		 * 
+		 */
 		get("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");
