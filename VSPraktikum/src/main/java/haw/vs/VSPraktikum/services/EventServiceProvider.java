@@ -13,7 +13,7 @@ import java.net.URL;
  * @since 02/05/16
  */
 public class EventServiceProvider {
-	private static final String EVENT_SERVICE_NAME = "gerrit_duc_vsp_Services";
+//	private static final String EVENT_SERVICE_NAME = "gerrit_duc_vsp_Services";
 	
 	private static final String EVENT_SERVICE_ID = "232";
 	
