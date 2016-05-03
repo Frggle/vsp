@@ -16,7 +16,7 @@ import org.eclipse.jetty.http.HttpStatus;
  * @author Marc
  *
  */
-public class Users {
+public class UsersService {
 	/* 
 	 * alle registrierten Benutzer
 	 * Abbildung von ID auf User Objekt 
@@ -25,10 +25,7 @@ public class Users {
 	
 	public static void main(String[] args) {
 		Gson gson = new Gson();
-		
-		/*
-		 * 
-		 */
+
 		get("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");

@@ -1,6 +1,7 @@
-package haw.vs.VSPraktikum.util;
+package haw.vs.VSPraktikum.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import haw.vs.VSPraktikum.util.YellowpagesData;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -18,7 +19,7 @@ public class EventServiceProvider {
 	
 	private static final String YELLOW_SERVICE_URL = "http://172.18.0.5:4567";
 	
-	public static YellowpagesService getService() {
+	public static YellowpagesData getService() {
 		try {
 			URL url = new URL(YELLOW_SERVICE_URL + "/services/" + EVENT_SERVICE_ID);
 			
@@ -46,7 +47,7 @@ public class EventServiceProvider {
 			reader.close();
 			
 			ObjectMapper mapper = new ObjectMapper();
-			YellowpagesService service = mapper.readValue(response.toString(), YellowpagesService.class);
+			YellowpagesData service = mapper.readValue(response.toString(), YellowpagesData.class);
 			return service;
 		} catch(MalformedURLException e) {
 			e.printStackTrace();

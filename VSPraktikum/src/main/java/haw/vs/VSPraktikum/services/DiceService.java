@@ -9,10 +9,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ThreadLocalRandom;
 import org.json.JSONObject;
-import haw.vs.VSPraktikum.util.EventServiceProvider;
-import haw.vs.VSPraktikum.util.YellowpagesService;
+import haw.vs.VSPraktikum.util.YellowpagesData;
 
-public class Dice {
+public class DiceService {
 	
 	public static void main(String[] args) {
 		get("/dice", (request, response) -> {
@@ -38,7 +37,7 @@ public class Dice {
 		HttpURLConnection connection = null;
 		
 		try {
-			YellowpagesService eventService = EventServiceProvider.getService();
+			YellowpagesData eventService = EventServiceProvider.getService();
 			URL url = new URL(eventService.getUri() + "events");
 			
 			String requestBody = "{ " + "\"game\":\"" + game + "\", " + "\"player\":\"" + player + "\"" + "}";
@@ -56,7 +55,7 @@ public class Dice {
 			wr.flush();
 			wr.close();
 			
-			int responseCode = connection.getResponseCode();
+			connection.getResponseCode();
 			
 			InputStream is = connection.getInputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
