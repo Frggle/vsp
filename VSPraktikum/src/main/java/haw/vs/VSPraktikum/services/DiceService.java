@@ -10,10 +10,13 @@ import java.net.URL;
 import java.util.concurrent.ThreadLocalRandom;
 import org.json.JSONObject;
 import haw.vs.VSPraktikum.util.YellowpagesData;
+import static haw.vs.VSPraktikum.util.YellowServiceRegistration.*;
 
 public class DiceService {
 	
 	public static void main(String[] args) {
+		registerService("jenny_marc_vsp_dice", "give a single dice roll", "dice", "http://172.18.0.71:4567/dice");
+		
 		get("/dice", (request, response) -> {
 			response.status(200);
 			response.type("application/json");

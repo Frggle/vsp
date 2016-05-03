@@ -1,5 +1,6 @@
 package haw.vs.VSPraktikum.services;
 
+import static haw.vs.VSPraktikum.util.YellowServiceRegistration.registerService;
 import static spark.Spark.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,8 @@ public class UsersService {
 	public static void main(String[] args) {
 		Gson gson = new Gson();
 
+		registerService("jenny_marc_vsp_users", "The users service registers users of the system", "users", "http://172.18.0.72:4567/users");
+		
 		get("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");
