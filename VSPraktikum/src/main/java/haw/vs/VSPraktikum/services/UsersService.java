@@ -43,7 +43,7 @@ public class UsersService {
 			response.status(HttpStatus.OK_200);
 
 			User user = gson.fromJson(request.body(), User.class);
-			
+		
 			if(isValid(user)) {
 				response.status(HttpStatus.OK_200);
 				usersMap.put(user.getId(), user);	// update user in map
