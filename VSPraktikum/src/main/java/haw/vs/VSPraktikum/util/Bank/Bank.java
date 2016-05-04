@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class Bank {
-	private Integer id;
+	private String uri;
 	
-	public int getID() {
-		return id;
+	public String getURI() {
+		return uri;
 	}
 }

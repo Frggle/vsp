@@ -3,11 +3,11 @@ package haw.vs.VSPraktikum.util.Bank;
 public class Account {
 	String playerURI; // URI
 	int saldo;	// Guthaben
-	String gameid; // URI vom Game
+	String bankuri; // URI von Bank
 
-	public Account(String playerURI, String gameID, int saldo) {
+	public Account(String playerURI, String bankuri, int saldo) {
 		this.playerURI = playerURI;
-		this.gameid = gameID;
+		this.bankuri = bankuri;
 		this.saldo = saldo;
 	}
 	
@@ -23,11 +23,26 @@ public class Account {
 		this.saldo = saldo;
 	}
 	
-	public String getGameID() {
-		return gameid;
+	// Bank zahlt auf PlayerKonto ein
+	public void fromBank(int amount) {
+		this.saldo += amount;
+	}
+
+	// Player zahlt in Bank ein
+	public boolean toBank(int amount) {
+		if((this.saldo - amount) < 0) {
+			return false;
+		} else {
+			this.saldo -= amount;
+			return true;
+		}
 	}
 	
-	public void setGameID(String gameid) {
-		this.gameid = gameid;
+	public String getBankURI() {
+		return bankuri;
+	}
+	
+	public void setBankURI(String bankuri) {
+		this.bankuri = bankuri;
 	}
 }
