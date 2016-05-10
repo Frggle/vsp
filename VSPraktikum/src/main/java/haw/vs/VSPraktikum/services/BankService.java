@@ -10,7 +10,6 @@ import java.util.Map;
 import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import haw.vs.VSPraktikum.util.Bank.Account;
 import haw.vs.VSPraktikum.util.Bank.Bank;
 

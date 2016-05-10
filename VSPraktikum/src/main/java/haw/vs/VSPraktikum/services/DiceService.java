@@ -40,7 +40,7 @@ public class DiceService {
 		HttpURLConnection connection = null;
 		
 		try {
-			YellowpagesData eventService = EventServiceProvider.getService();
+			YellowpagesData eventService = EventServiceProvider.getService("232");
 			URL url = new URL(eventService.getUri() + "events");
 			
 			String requestBody = "{ " + "\"game\":\"" + game + "\", " + "\"player\":\"" + player + "\"" + "}";

@@ -15,13 +15,14 @@ import java.net.URL;
 public class EventServiceProvider {
 //	private static final String EVENT_SERVICE_NAME = "gerrit_duc_vsp_Services";
 	
-	private static final String EVENT_SERVICE_ID = "232";
+//	private static final String EVENT_SERVICE_ID = "232";
 	
 	private static final String YELLOW_SERVICE_URL = "http://172.18.0.5:4567";
 	
-	public static YellowpagesData getService() {
+	public static YellowpagesData getService(String eventServiceID) {
 		try {
-			URL url = new URL(YELLOW_SERVICE_URL + "/services/" + EVENT_SERVICE_ID);
+			URL url = new URL(YELLOW_SERVICE_URL + "/services/" + eventServiceID);
+//			URL url = new URL(YELLOW_SERVICE_URL + "/services/" + EVENT_SERVICE_ID);
 			
 			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 			connection.setRequestMethod("GET");
