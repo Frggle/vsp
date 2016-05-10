@@ -1,18 +1,18 @@
 package haw.vs.VSPraktikum.util.Bank;
 
 public class Account {
-	String playerURI; // URI
+	String player; // URI
 	int saldo;	// Guthaben
 	String bankuri; // URI von Bank
 
-	public Account(String playerURI, String bankuri, int saldo) {
-		this.playerURI = playerURI;
+	public Account(String player, String bankuri, int saldo) {
+		this.player = player;
 		this.bankuri = bankuri;
 		this.saldo = saldo;
 	}
 	
 	public String getPlayerURI() {
-		return playerURI;
+		return player;
 	}
 	
 	public int getSaldo() {

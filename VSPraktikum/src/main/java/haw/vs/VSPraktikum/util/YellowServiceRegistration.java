@@ -16,7 +16,6 @@ public class YellowServiceRegistration {
 			json.put("service", service);
 			json.put("uri", uri);
 
-			System.err.println(json);
 			Unirest.post(YELLOW_PAGES).header("Content-Type", "application/json").body(json).asString();
 		} catch (Exception e) {}
 	}

@@ -68,7 +68,7 @@ public class UsersService {
 			return gson.toJson(user.userInfo());
 		});
 		
-		put("users/:id", (request, response) -> {
+		put("/users/:id", (request, response) -> {
 			String playername = "users/" + request.params(":id");
 			
 			String body = request.body();
