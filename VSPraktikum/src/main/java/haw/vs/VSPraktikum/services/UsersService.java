@@ -5,12 +5,13 @@ import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
-
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 
 import com.google.gson.Gson;
@@ -30,8 +31,14 @@ public class UsersService {
 	 * Abbildung von Name auf User Objekt
 	 */
 	private static Map<String, User> usersMap = new HashMap<>();
+	
+	private static String URI;
 
 	public static void main(String[] args) {
+		try {
+			URI = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
+		} catch(UnknownHostException e) {}
+		
 		Gson gson = new Gson();
 
 		registerService("jenny_marc_vsp_users", "The users service registers users of the system", "users", "http://172.18.0.72:4567/users");
@@ -54,6 +61,7 @@ public class UsersService {
 			if(isValid(user)) {
 				response.status(HttpStatus.OK_200);
 				usersMap.put(user.getName(), user);	// update user in map
+				response.header(HttpHeader.LOCATION.asString(), URI + user.getId());
 			} else {
 				response.status(HttpStatus.BAD_REQUEST_400);
 			}

@@ -41,7 +41,7 @@ public class BankService {
 			response.type("application/json");
 			List<String> uriList = new ArrayList<>();
 			for(Bank bank : bankMap.values()) {
-				uriList.add(bank.getURI());
+				uriList.add(bank.getID());
 			}
 			return gson.toJson(uriList);
 		});

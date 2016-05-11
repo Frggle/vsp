@@ -1,7 +1,7 @@
 package haw.vs.VSPraktikum.util.Bank;
 
 public class Account {
-	String player; // URI
+	String player; // URI: '/games/42/players/mario'
 	int saldo;	// Guthaben
 	String bankuri; // URI von Bank
 
