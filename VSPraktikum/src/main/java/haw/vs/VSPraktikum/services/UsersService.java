@@ -60,8 +60,8 @@ public class UsersService {
 			return "";
 		});
 
-		get("/users/:id", (request, response) -> {
-			String playername = "/users/" + request.params(":id");
+		get("/users/:name", (request, response) -> {
+			String playername = "/users/" + request.params(":name");
 
 			if(!usersMap.containsKey(playername)) {
 				response.status(HttpStatus.NOT_FOUND_404);
@@ -75,8 +75,8 @@ public class UsersService {
 			return gson.toJson(user.userInfo());
 		});
 
-		put("/users/:id", (request, response) -> {
-			String playername = "/users/" + request.params(":id");
+		put("/users/:name", (request, response) -> {
+			String playername = "/users/" + request.params(":name");
 
 			String body = request.body();
 			JsonElement jsonElem = gson.fromJson(body, JsonElement.class);
@@ -94,8 +94,8 @@ public class UsersService {
 			return "";
 		});
 
-		delete("/users/:id", (request, response) -> {
-			String playername = "/users/" + request.params(":id");
+		delete("/users/:name", (request, response) -> {
+			String playername = "/users/" + request.params(":name");
 
 			if(usersMap.containsKey(playername)) {
 				usersMap.remove(playername);
