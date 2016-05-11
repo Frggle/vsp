@@ -39,11 +39,11 @@ public class UsersService {
 		get("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");
-			List<String> uriList = new ArrayList<>();
+			List<String> idList = new ArrayList<>();
 			for(User user : usersMap.values()) {
-				uriList.add(user.getUri());
+				idList.add(user.getId());
 			}
-			return gson.toJson(uriList);
+			return gson.toJson(idList);
 		});
 
 		post("/users", (request, response) -> {
@@ -61,7 +61,7 @@ public class UsersService {
 		});
 
 		get("/users/:id", (request, response) -> {
-			String playername = "users/" + request.params(":id");
+			String playername = "/users/" + request.params(":id");
 
 			if(!usersMap.containsKey(playername)) {
 				response.status(HttpStatus.NOT_FOUND_404);
@@ -95,7 +95,7 @@ public class UsersService {
 		});
 
 		delete("/users/:id", (request, response) -> {
-			String playername = "users/" + request.params(":id");
+			String playername = "/users/" + request.params(":id");
 
 			if(usersMap.containsKey(playername)) {
 				usersMap.remove(playername);
