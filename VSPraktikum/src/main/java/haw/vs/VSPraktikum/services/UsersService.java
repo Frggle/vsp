@@ -27,7 +27,7 @@ import haw.vs.VSPraktikum.util.User;
 public class UsersService {
 	/*
 	 * alle registrierten Benutzer
-	 * Abbildung von ID auf User Objekt
+	 * Abbildung von Name auf User Objekt
 	 */
 	private static Map<String, User> usersMap = new HashMap<>();
 
@@ -53,7 +53,7 @@ public class UsersService {
 
 			if(isValid(user)) {
 				response.status(HttpStatus.OK_200);
-				usersMap.put(user.getId(), user);	// update user in map
+				usersMap.put(user.getName(), user);	// update user in map
 			} else {
 				response.status(HttpStatus.BAD_REQUEST_400);
 			}
@@ -61,7 +61,7 @@ public class UsersService {
 		});
 
 		get("/users/:name", (request, response) -> {
-			String playername = "/users/" + request.params(":name");
+			String playername = request.params(":name");
 
 			if(!usersMap.containsKey(playername)) {
 				response.status(HttpStatus.NOT_FOUND_404);
@@ -76,7 +76,7 @@ public class UsersService {
 		});
 
 		put("/users/:name", (request, response) -> {
-			String playername = "/users/" + request.params(":name");
+			String playername = request.params(":name");
 
 			String body = request.body();
 			JsonElement jsonElem = gson.fromJson(body, JsonElement.class);
@@ -95,7 +95,7 @@ public class UsersService {
 		});
 
 		delete("/users/:name", (request, response) -> {
-			String playername = "/users/" + request.params(":name");
+			String playername = request.params(":name");
 
 			if(usersMap.containsKey(playername)) {
 				usersMap.remove(playername);
