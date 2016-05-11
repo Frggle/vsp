@@ -1,16 +1,23 @@
 package haw.vs.VSPraktikum.services;
 
 import static haw.vs.VSPraktikum.util.YellowServiceRegistration.registerService;
-import static spark.Spark.*;
+import static spark.Spark.delete;
+import static spark.Spark.get;
+import static spark.Spark.post;
+import static spark.Spark.put;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.eclipse.jetty.http.HttpStatus;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import haw.vs.VSPraktikum.util.User;
-import org.eclipse.jetty.http.HttpStatus;
 
 /**
  * Ein Service bei dem sich Benutzer registrieren können.
@@ -18,17 +25,17 @@ import org.eclipse.jetty.http.HttpStatus;
  *
  */
 public class UsersService {
-	/* 
+	/*
 	 * alle registrierten Benutzer
-	 * Abbildung von ID auf User Objekt 
+	 * Abbildung von ID auf User Objekt
 	 */
 	private static Map<String, User> usersMap = new HashMap<>();
-	
+
 	public static void main(String[] args) {
 		Gson gson = new Gson();
 
 		registerService("jenny_marc_vsp_users", "The users service registers users of the system", "users", "http://172.18.0.72:4567/users");
-		
+
 		get("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");
@@ -38,12 +45,12 @@ public class UsersService {
 			}
 			return gson.toJson(uriList);
 		});
-		
+
 		post("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 
 			User user = gson.fromJson(request.body(), User.class);
-		
+
 			if(isValid(user)) {
 				response.status(HttpStatus.OK_200);
 				usersMap.put(user.getId(), user);	// update user in map
@@ -52,29 +59,29 @@ public class UsersService {
 			}
 			return "";
 		});
-		
+
 		get("/users/:id", (request, response) -> {
 			String playername = "users/" + request.params(":id");
-			
+
 			if(!usersMap.containsKey(playername)) {
 				response.status(HttpStatus.NOT_FOUND_404);
-				return "";				
-			} 
-			
+				return "";
+			}
+
 			User user = usersMap.get(playername);
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");
-			
+
 			return gson.toJson(user.userInfo());
 		});
-		
+
 		put("/users/:id", (request, response) -> {
-			String playername = "users/" + request.params(":id");
-			
+			String playername = "/users/" + request.params(":id");
+
 			String body = request.body();
 			JsonElement jsonElem = gson.fromJson(body, JsonElement.class);
 			JsonObject jsonOb = jsonElem.getAsJsonObject();
-			
+
 			if(usersMap.containsKey(playername)) {
 				response.status(HttpStatus.OK_200);
 				User user = usersMap.get(playername);
@@ -86,10 +93,10 @@ public class UsersService {
 			}
 			return "";
 		});
-		
+
 		delete("/users/:id", (request, response) -> {
 			String playername = "users/" + request.params(":id");
-			
+
 			if(usersMap.containsKey(playername)) {
 				usersMap.remove(playername);
 				response.status(HttpStatus.OK_200);
@@ -99,7 +106,7 @@ public class UsersService {
 			return "";
 		});
 	}
-	
+
 	/**
 	 * Prueft ob neuer User gueltige Werte besitzt
 	 * @param user
