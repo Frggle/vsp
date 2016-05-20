@@ -5,19 +5,27 @@ import java.util.Map;
 import haw.vs.VSPraktikum.services.TransactionService;
 
 public class Bank {
-	private String id;
+	private String id;	// /banks/<zahl>
+	private String number;	// <zahl>
+	private String gameid;	// /games/3
 	private static final TransactionService transService = TransactionService.getInstance();
 	private Map<String, Account> accountMap;
 	
 	// TODO: transService verwenden
 	
-	public Bank(String id) {
-		this.id = id;
+	public Bank(String gameid, int number) {
+		this.gameid = gameid;
+		this.number = "" + number;
+		this.id = "/banks/" + number;
 		accountMap = new HashMap<>();
 	}	
 	
 	public String getID() {
 		return id;
+	}
+	
+	public String getNumber() {
+		return number;
 	}
 	
 	public boolean createAccount(String playerURI, String saldo) {

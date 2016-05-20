@@ -48,7 +48,7 @@ public class UsersService {
 			response.type("application/json");
 			List<String> idList = new ArrayList<>();
 			for(User user : usersMap.values()) {
-				idList.add(user.getId());
+				idList.add(user.getID());
 			}
 			return gson.toJson(idList);
 		});
@@ -61,7 +61,7 @@ public class UsersService {
 			if(isValid(user)) {
 				response.status(HttpStatus.OK_200);
 				usersMap.put(user.getName(), user);	// update user in map
-				response.header(HttpHeader.LOCATION.asString(), URI + user.getId());
+				response.header(HttpHeader.LOCATION.asString(), URI + user.getID());
 			} else {
 				response.status(HttpStatus.BAD_REQUEST_400);
 			}

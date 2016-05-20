@@ -15,7 +15,7 @@ public class User {
 		this.uri = uri;
 	}
 
-	public String getId() {
+	public String getID() {
 		return this.id;
 	}
 
