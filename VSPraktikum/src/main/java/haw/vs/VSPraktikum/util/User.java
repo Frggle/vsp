@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 public class User {
 	private String id;	// "/users/<name>"
 	private String name;	// "<name>"
-	private String uri;	// "http://localhost:4567/client/<name>"
+	private String uri;	// "http://localhost:4567/client/<id>"
 
 	public User(String name, String uri){
 		this.id = "/users/" + name;
