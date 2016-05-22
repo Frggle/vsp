@@ -1,36 +1,45 @@
 package haw.vs.VSPraktikum.services;
 
 import static haw.vs.VSPraktikum.util.YellowServiceRegistration.registerService;
-import static spark.Spark.*;
+import static spark.Spark.get;
+import static spark.Spark.post;
+import static spark.Spark.put;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
+
 import com.google.gson.Gson;
+
 import haw.vs.VSPraktikum.util.Bank.Account;
 import haw.vs.VSPraktikum.util.Bank.Bank;
 
 public class BankService {
-	
+
 	private static int bankNumCounter = 0;
 	private static String URI;
 	private static Map<String, Bank> bankMap = new HashMap<>(); // numer -> Bank
 	private static Map<String, Account> accountMap = new HashMap<>(); // PlayerID -> Account
-	
+
 	public static void main(String[] args) {
 		try {
 			URI = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
 		} catch(UnknownHostException e) {}
-		
+
 		Gson gson = new Gson();
-		
+
 		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", "http://172.18.0.73:4567/bank");
-		
+
+		/*
+		 * Initialisiert eine neue Bank
+		 */
 		post("/banks", (req, res) -> {
 			JSONObject json = new JSONObject(req.body());
 			String gameID = json.getString("game");
@@ -40,7 +49,10 @@ public class BankService {
 
 			return "";
 		});
-		
+
+		/*
+		 * Gibt die Liste aller Banken aus
+		 */
 		get("/banks", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");
@@ -53,6 +65,10 @@ public class BankService {
 			return json;
 		});
 
+		/*
+		 * Gibt die geforderte Bank zurück inkl. Transfer und Konten, falls vorhanden
+		 * Sollte die angegebene Bank noch nicht existieren, wird diese erstellt
+		 */
 		// TODO: noch nicht fertig!!!
 		put("/banks/:number", (request, response) -> {
 			String bankid = request.params(":number");
@@ -61,22 +77,22 @@ public class BankService {
 			} else {
 				response.status(HttpStatus.BAD_REQUEST_400);
 			}
-			
+
 			return "";
 		});
-			
+
 		// ------------------- old code downstairs
-	
-		
+
+
 		/**
 		 * neues Konto erstellen
 		 */
 		post("/banks/:bankuri/players", (request, response) -> {
 			String bankuri = request.params(":bankuri");
-			
+
 			Account account = gson.fromJson(request.body(), Account.class);
 			account.setBankURI(bankuri);
-			
+
 			if(accountMap.containsKey(account.getPlayerURI())) {
 				response.status(HttpStatus.CONFLICT_409);
 				response.type("text/plain");
@@ -89,13 +105,13 @@ public class BankService {
 			}
 			return "";
 		});
-		
+
 		/**
 		 * Kontostand abfragen
 		 */
 		get("/banks/:bankuri/players/:playeruri", (request, response) -> {
 			String playeruri = "/users/" + request.params(":playeruri");
-			
+
 			if(accountMap.containsKey(playeruri)) {
 				Account account = accountMap.get(playeruri);
 				response.status(HttpStatus.OK_200);
@@ -111,12 +127,15 @@ public class BankService {
 				return "";
 			}
 		});
-		
+
+		/*
+		 * Geldtransfer von der Bank zum angegebenen Spieler
+		 */
 		post("/banks/:bankuri/transfer/to/:playerid/:amount", (request, response) -> {
 			String playerid = "/users/" + request.params(":playerid");
 			String amount_s = request.params(":amount");
 			String bankuri = request.params(":bankuri");
-			
+
 			int amount = 0;
 			try {
 				amount = Integer.parseInt(amount_s);
@@ -139,15 +158,19 @@ public class BankService {
 				response.type("text/plain");
 				response.body("player not found");
 			}
-			
+
 			return "";
 		});
-		
+
+
+		/*
+		 * Geldtransfer vom Spieler zur Bank
+		 */
 		post("/banks/:bankuri/transfer/from/:playerid/:amount", (request, response) -> {
 			String playerid = "/users/" + request.params(":playerid");
 			String amount_s = request.params(":amount");
 			String bankuri = request.params(":bankuri");
-			
+
 			int amount = 0;
 			try {
 				amount = Integer.parseInt(amount_s);
@@ -175,16 +198,19 @@ public class BankService {
 				response.type("text/plain");
 				response.body("player not found");
 			}
-			
+
 			return "";
 		});
-		
+
+		/*
+		 * Geldtransfer von einem Spieler zu einen anderen Spieler
+		 */
 		post("/banks/:bankuri/transfer/from/:from/to/:to/:amount", (request, response) -> {
 			String bankuri = request.params(":bankuri");
 			String fromPlayer = "/users/" + request.params(":from");
 			String toPlayer = "/users/" + request.params(":to");
 			String amount_s = request.params(":amount");
-			
+
 			int amount = 0;
 			try {
 				amount = Integer.parseInt(amount_s);
@@ -215,7 +241,7 @@ public class BankService {
 				response.type("text/plain");
 				response.body("player not found");
 			}
-			
+
 			return "";
 		});
 	}
