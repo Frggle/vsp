@@ -25,8 +25,8 @@ public class BankService {
 
 	private static int bankNumCounter = 0;
 	private static String URI;
-	private static Map<String, Bank> bankMap = new HashMap<>(); // numer -> Bank
-	private static Map<String, Account> accountMap = new HashMap<>(); // PlayerID -> Account
+	private static Map<String, Bank> bankMap = new HashMap<>(); // number -> Bank
+	//private static Map<String, Account> accountMap = new HashMap<>(); // PlayerID -> Account
 
 	public static void main(String[] args) {
 		try {
@@ -66,42 +66,51 @@ public class BankService {
 		});
 
 		/*
-		 * Gibt die geforderte Bank zurück inkl. Transfer und Konten, falls vorhanden
+		 * Gibt die geforderte Bank zurück inkl. Transfers und Konten, falls vorhanden
 		 * Sollte die angegebene Bank noch nicht existieren, wird diese erstellt
 		 */
 		// TODO: noch nicht fertig!!!
 		put("/banks/:number", (request, response) -> {
 			String bankid = request.params(":number");
-			if(!bankMap.containsKey(bankid)) {
-				response.status(HttpStatus.CREATED_201);
-			} else {
-				response.status(HttpStatus.BAD_REQUEST_400);
+			JSONObject json = new JSONObject(request.body());
+			String accountUri = json.getString("accounts");
+			String transferUri = json.getString("transfers");
+			if(accountUri != null){
+
 			}
+			if(transferUri != null){
+
+			}
+
+//			if(!bankMap.containsKey(bankid)) {
+//				response.status(HttpStatus.CREATED_201);
+//			} else {
+//				response.status(HttpStatus.BAD_REQUEST_400);
+//			}
 
 			return "";
 		});
 
-		// ------------------- old code downstairs
-
-
 		/**
 		 * neues Konto erstellen
 		 */
-		post("/banks/:bankuri/players", (request, response) -> {
-			String bankuri = request.params(":bankuri");
+		post("/banks/:number/accounts", (request, response) -> {
+			String number = request.params(":number");
 
 			Account account = gson.fromJson(request.body(), Account.class);
-			account.setBankURI(bankuri);
-
-			if(accountMap.containsKey(account.getPlayerURI())) {
+			account.setBankURI(number);
+			Bank bank = bankMap.get(number);
+			if(bank.accountExists(account.getPlayerURI())){
 				response.status(HttpStatus.CONFLICT_409);
 				response.type("text/plain");
 				response.body("player already got a bank account");
-			} else {
+			}else{
 				response.status(HttpStatus.CREATED_201);
 				response.type("text/plain");
 				response.body("bank account has been created");
-				accountMap.put(account.getPlayerURI(), account);
+
+				bank.createAccount(account.getPlayerURI(), account.getSaldo());
+				response.header(HttpHeader.LOCATION.asString(), URI + account.getAccountID());
 			}
 			return "";
 		});
@@ -109,24 +118,37 @@ public class BankService {
 		/**
 		 * Kontostand abfragen
 		 */
-		get("/banks/:bankuri/players/:playeruri", (request, response) -> {
-			String playeruri = "/users/" + request.params(":playeruri");
+		get("/banks/:number/accounts/:accountNumber", (request, response) -> {
+			String bankNumber = request.params(":number");
+			String accountNumber = request.params(":accountNumber");
 
-			if(accountMap.containsKey(playeruri)) {
-				Account account = accountMap.get(playeruri);
-				response.status(HttpStatus.OK_200);
-				response.type("application/json");
-				JSONObject jsn = new JSONObject();
-				jsn.put("player", account.getPlayerURI());
-				jsn.put("saldo", account.getSaldo());
-				return jsn;
-			} else {
-				response.status(HttpStatus.BAD_REQUEST_400);
+			Bank bank = null;
+			if(bankMap.containsKey(bankNumber)){
+				bank = bankMap.get(bankNumber);
+			} else{
+				response.status(HttpStatus.NOT_FOUND_404);
 				response.type("text/plain");
-				response.body("account uri doesn't exist");
+				response.body("bank doesn't exist");
 				return "";
 			}
+			Account account = null;
+			if(bank.accountExists(accountNumber)) {
+				account = bank.getAccount(accountNumber);
+			} else{
+				response.status(HttpStatus.NOT_FOUND_404);
+				response.type("text/plain");
+				response.body("account doesn't exist");
+				return "";
+			}
+			response.status(HttpStatus.OK_200);
+			response.type("application/json");
+			JSONObject jsn = new JSONObject();
+			jsn.put("player", account.getPlayerURI());
+			jsn.put("saldo", account.getSaldo());
+			return jsn;
 		});
+
+		// ------------------- old code downstairs
 
 		/*
 		 * Geldtransfer von der Bank zum angegebenen Spieler
