@@ -2,114 +2,116 @@ package haw.vs.VSPraktikum.util.Bank;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import haw.vs.VSPraktikum.services.TransactionService;
 
 public class Bank {
-	private String id;	// /banks/<zahl>
-	private String number;	// <zahl>
-	private String gameid;	// /games/3
-	private static final TransactionService transService = TransactionService.getInstance();
-	private Map<String, Account> accountMap; //playerUri -> Account
-	private int accountNumCounter = 0;
-
-	// TODO: transService verwenden
-
-	public Bank(String gameid, int number) {
-		this.gameid = gameid;
-		this.number = "" + number;
-		this.id = "/banks/" + number;
-		accountMap = new HashMap<>();
+	private Map<String, Account> accountMap = new HashMap<>();
+	private String bankNumber;
+	private Map<Integer, Transaction> transactionMap = new HashMap<>();
+	private int accountNumberCounter = 0;
+//	private String bankURI;
+//	private String playerURI;
+	
+	public Bank(int bankNumber) { //, String playerURI, String bankURI) {
+		this.bankNumber = String.valueOf(bankNumber);
+//		this.bankURI = bankURI;
+//		this.playerURI = playerURI;
 	}
-
-	public String getID() {
-		return id;
+	
+	public Account createAccount(int saldo) {
+		Account account = new Account(accountNumberCounter++, saldo); //, bankURI, playerURI);
+		accountMap.put(account.getAccountNumber(), account);
+		return account;
 	}
-
-	public String getNumber() {
-		return number;
+	
+	public Account getAccount(int accNumber) {
+		return accountMap.get(accNumber);
 	}
-
-	public boolean createAccount(String playerURI, String saldo) {
-		int saldoAsInt = 0;
-		if((saldoAsInt = convertSaldoToInt(saldo)) != Integer.MAX_VALUE) {
-			if(accountMap.containsKey(playerURI)) {
-				Account acc = new Account(playerURI, id, saldoAsInt, accountNumCounter++);
-				accountMap.put(playerURI, acc);
-				return true;
-			} else {
-				return false;
+	
+	public String getBankNumber() {
+		return bankNumber;
+	}
+	
+	public boolean addAmount(int to, String amountS) {
+		int amountI = convertAmountToInt(amountS);
+		if(amountI == Integer.MAX_VALUE) {
+			return false;
+		}
+		if(accountMap.containsKey(String.valueOf(to))) {
+			Account acc = accountMap.get(String.valueOf(to));
+			acc.addAmount(amountI);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean subtractAmount(int from, String amountS) {
+		int amountI = convertAmountToInt(amountS);
+		if(amountI == Integer.MAX_VALUE) {
+			return false;
+		}
+		if(accountMap.containsKey(String.valueOf(from))) {
+			Account acc = accountMap.get(String.valueOf(from));
+			if(acc.subtractAmount(amountI)) {
+				return true;	
 			}
 		}
 		return false;
 	}
-
-	public boolean transferFromPlayerToBank(String playerURI, String saldo) {
-		if(accountMap.containsKey(playerURI)) {
-			Account acc = accountMap.get(playerURI);
-			int saldoAsInt = 0;
-			if((saldoAsInt = convertSaldoToInt(saldo)) != Integer.MAX_VALUE) {
-				if(acc.toBank(saldoAsInt)) {
-					return true;
-				}
-			}
+	
+	public boolean transfer(int from, int to, String amountS) {
+		int amountI = convertAmountToInt(amountS);
+		if(amountI == Integer.MAX_VALUE) {
+			return false;
 		}
-		return false;
-	}
-
-	public boolean transferFromBankToPlayer(String playerURI, String saldo) {
-		if(accountMap.containsKey(playerURI)) {
-			Account acc = accountMap.get(playerURI);
-			int saldoAsInt = 0;
-			if((saldoAsInt = convertSaldoToInt(saldo)) != Integer.MAX_VALUE) {
-				acc.fromBank(saldoAsInt);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public boolean transferFromPlayerToPlayer(String playerURIFrom, String playerURITo, String saldo) {
-		if(accountMap.containsKey(playerURIFrom) && accountMap.containsKey(playerURITo)) {
-			Account accFrom = accountMap.get(playerURIFrom);
-			Account accTo = accountMap.get(playerURITo);
-			int saldoAsInt = 0;
-			if((saldoAsInt = convertSaldoToInt(saldo)) != Integer.MAX_VALUE) {
-				if(!accFrom.toBank(saldoAsInt)) {
-					return false;
-				}
-				accTo.fromBank(saldoAsInt);
+		if(accountMap.containsKey(String.valueOf(from)) && accountMap.containsKey(String.valueOf(to))) {
+			Account accFrom = accountMap.get(String.valueOf(from));
+			Account accTo = accountMap.get(String.valueOf(to));
+			if(accFrom.subtractAmount(amountI)) {
+				accTo.addAmount(amountI);
 				return true;
 			}
+		} else {
+			return false;
 		}
 		return false;
 	}
-
-	private int convertSaldoToInt(String saldo) {
-		int saldo_asInt = 0;
+	
+	/**
+	 * Convert a String to int
+	 * invalid int -> MAX_VALUE
+	 * @param amount
+	 * @return converted String
+	 */
+	private int convertAmountToInt(String amount) {
+		int amountAsInt = 0;
 		try {
-			saldo_asInt = Integer.parseInt(saldo);
+			amountAsInt = Integer.parseInt(amount);
 		} catch(NumberFormatException e) {
 			return Integer.MAX_VALUE;
 		}
-		return saldo_asInt;
+		return amountAsInt;
 	}
 
-	public boolean accountExists(String playerUri){
-		return accountMap.containsKey(playerUri);
-	}
-
-//	public Account getAccount(String playerUri) {
-//		return accountMap.get(playerUri);
-//	}
-
-	public Account getAccount(String accountNumber) {
-		for(Entry<String, Account> entry : accountMap.entrySet()) {
-			if(entry.getValue().getAccountNumber().equals(accountNumber)) {
-				return entry.getValue();
-			}
+	public void createTransaction(int tid) {
+		if(!transactionMap.containsKey(tid)) {
+			Transaction transaction = new Transaction(tid);
+			transactionMap.put(tid, transaction);
 		}
-		return null;
+	}
+	
+	// TODO: wie wird kenntlich gemacht, dass es sich um einen Transfer zwischen Bank und Player handelt?
+	public void addTransfer(int tid, int from, int to, int amount) {
+		
+	}
+	
+	public void commitTransaction(int tid) {
+		if(transactionMap.containsKey(tid)) {
+			Transaction transaction = transactionMap.get(tid);
+			// TODO: einzelnen Transfers ausfuehren
+		}
+	}
+	
+	public void deleteTransaction(int tid) {
+		transactionMap.remove(tid);
 	}
 }

@@ -19,7 +19,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 import haw.vs.VSPraktikum.util.Client.Client;
 
-public class ClientService {
+public class _ClientService {
 	private static String GAME_SERVICE_ID = "foo";
 	private static String BOARD_SERVICE_ID = "foo";
 	private static String BANK_SERVICE_ID = "bar";
