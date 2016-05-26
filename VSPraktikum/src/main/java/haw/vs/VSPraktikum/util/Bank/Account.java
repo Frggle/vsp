@@ -1,14 +1,10 @@
 package haw.vs.VSPraktikum.util.Bank;
 
-import lombok.Data;
-import lombok.Getter;
-
-@Data
 public class Account {
 	/**
 	 * unique accountnumber
 	 */
-	@Getter private String accountNumber;
+	private String accountNumber;
 	/**
 	 * saldo of a player
 	 */
@@ -27,6 +23,11 @@ public class Account {
 //		this.playerURI = playerURI;
 	}
 	
+	public Account(int accountNumber) {
+		this.accountNumber = String.valueOf(accountNumber);
+		this.saldo = Integer.MAX_VALUE / 2;
+	}
+	
 	public void addAmount(int amount) {
 		this.saldo += amount;
 	}
@@ -42,5 +43,9 @@ public class Account {
 	
 	public String getAccountNumber() {
 		return accountNumber;
+	}
+	
+	public int getSaldo() {
+		return saldo;
 	}
 }

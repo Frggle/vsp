@@ -8,6 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 import haw.vs.VSPraktikum.util.Bank.Bank;
 
+/**
+ * Ein BankService verwaltet alle Banken und bietet REST-Methoden an
+ * @author Marc
+ *
+ */
 public class BankService {
 	/**
 	 * bankNum -> Bank 
@@ -25,22 +30,37 @@ public class BankService {
 	
 	public static void main(String[] args) {
 		
+		/**
+		 * Erzeugt eine neue Bank
+		 */
 		post("/banks", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Liste mit allen Banken
+		 */
 		get("/banks", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * TODO: was wird hier gemacht?
+		 */
 		put("/banks/:bankNum", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Gibt eine spezifische Bank zurueck
+		 */
 		get("/banks/:bankNum", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * 
+		 */
 		get("/banks/:bankNum/transfers", (req, res) -> {
 			return "";
 		});
