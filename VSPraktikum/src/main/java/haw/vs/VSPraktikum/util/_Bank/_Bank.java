@@ -1,10 +1,9 @@
-package haw.vs.VSPraktikum.util.Bank;
+package haw.vs.VSPraktikum.util._Bank;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import haw.vs.VSPraktikum.services._TransactionService;
+import haw.vs.VSPraktikum.services._._TransactionService;
 
 public class _Bank {
 	private String id;	// /banks/<zahl>

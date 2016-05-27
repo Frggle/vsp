@@ -59,48 +59,81 @@ public class BankService {
 		});
 		
 		/**
-		 * 
+		 * Liste mit allen Transferen einer Bank
 		 */
 		get("/banks/:bankNum/transfers", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Gibt fuer eine spezifische Bank einen bestimmten Transfer zueruck
+		 */
 		get("/banks/:bankNum/transfers/:tid", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Ueberweist einen Geldbetrag von einem Account zum Anderen
+		 * Wenn im QueryParams eine Transaction ID gesetzt ist -> erzeugt Transaction
+		 */
 		post("/banks/:bankNum/transfer/from/:accountFromNum/to/:accountToNum/:amount", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Ueberweist einen Geldbetrag von der Bank zum Account
+		 * Wenn im QueryParams eine Transaction ID gesetzt ist -> erzeugt Transaction
+		 */
 		post("/banks/:bankNum/transfer/to/:accountToNum/:amount", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Zieht von einem Account einen Betrag ab
+		 * Wenn im QueryParams eine Transaction ID gesetzt ist -> erzeugt Transaction
+		 */
 		post("/banks/:bankNum/transfer/from/:accountFromNum/:amount", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Gibt den Status einer spezifischen Transaction zueruck
+		 */
 		get("/banks/:bankNum/transaction/:tid", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Commitet (fuehrt aus) eine spezifische Transaction
+		 */
 		put("/banks/:bankNum/transaction/:tid", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Entfernt eine Transaction
+		 */
 		delete("/banks/:bankNum/transaction/:tid", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Liste mit allen Accounts
+		 */
 		get("/banks/:bankNum/accounts", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Erzeugt einen neuen Account
+		 */
 		post("/banks/:bankNum/accounts", (req, res) -> {
 			return "";
 		});
 		
+		/**
+		 * Gibt den Saldo eines spezifischen Accounts zurueck
+		 */
 		get("/banks/:bankNum/accounts/:accountNum", (req, res) -> {
 			return "";
 		});

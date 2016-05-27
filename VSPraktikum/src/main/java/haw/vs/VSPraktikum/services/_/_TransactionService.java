@@ -1,8 +1,8 @@
-package haw.vs.VSPraktikum.services;
+package haw.vs.VSPraktikum.services._;
 
 import java.util.HashMap;
 import java.util.Map;
-import haw.vs.VSPraktikum.util.Bank._Transaction;
+import haw.vs.VSPraktikum.util._Bank._Transaction;
 
 public class _TransactionService {
 	

@@ -1,4 +1,4 @@
-package haw.vs.VSPraktikum.util.Bank;
+package haw.vs.VSPraktikum.util._Bank;
 
 public class _Transaction {
 	String uri; // URI

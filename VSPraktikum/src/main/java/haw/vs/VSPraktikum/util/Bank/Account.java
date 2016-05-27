@@ -4,7 +4,7 @@ public class Account {
 	/**
 	 * unique accountnumber
 	 */
-	private String accountNumber;
+	private int accountNumber;
 	/**
 	 * saldo of a player
 	 */
@@ -17,14 +17,14 @@ public class Account {
 //	private String accountURI;
 	
 	public Account(int accountNumber, int saldo) {//, String bankURI, String playerURI) {
-		this.accountNumber = String.valueOf(accountNumber);
+		this.accountNumber = accountNumber;
 		this.saldo = saldo;
 //		this.bankURI = bankURI;
 //		this.playerURI = playerURI;
 	}
 	
 	public Account(int accountNumber) {
-		this.accountNumber = String.valueOf(accountNumber);
+		this.accountNumber = accountNumber;
 		this.saldo = Integer.MAX_VALUE / 2;
 	}
 	
@@ -41,7 +41,7 @@ public class Account {
 		}
 	}
 	
-	public String getAccountNumber() {
+	public int getAccountNumber() {
 		return accountNumber;
 	}
 	

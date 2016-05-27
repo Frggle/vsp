@@ -1,4 +1,4 @@
-package haw.vs.VSPraktikum.services;
+package haw.vs.VSPraktikum.services._;
 
 import static haw.vs.VSPraktikum.util.YellowServiceRegistration.registerService;
 import static spark.Spark.get;
@@ -17,9 +17,8 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
 
 import com.google.gson.Gson;
-
-import haw.vs.VSPraktikum.util.Bank._Account;
-import haw.vs.VSPraktikum.util.Bank._Bank;
+import haw.vs.VSPraktikum.util._Bank._Account;
+import haw.vs.VSPraktikum.util._Bank._Bank;
 
 public class _BankService {
 
