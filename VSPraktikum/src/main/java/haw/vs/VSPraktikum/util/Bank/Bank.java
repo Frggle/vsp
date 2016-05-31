@@ -1,6 +1,8 @@
 package haw.vs.VSPraktikum.util.Bank;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,11 +30,13 @@ public class Bank {
 	
 	private int accountNumberCounter = 0;
 	private int transferNumberCounter = 0;
+	private String gameURI;	// /games/42
 //	private String bankURI;
 //	private String playerURI;
 	
-	public Bank(int bankNumber) { //, String playerURI, String bankURI) {
+	public Bank(int bankNumber, String gameURI) { //, String playerURI, String bankURI) {
 		this.bankNumber = bankNumber;
+		this.gameURI = gameURI;
 //		this.bankURI = bankURI;
 //		this.playerURI = playerURI;
 	}
@@ -43,22 +47,35 @@ public class Bank {
 	 * @throws NumberFormatException, wenn "saldo" ungueltig
 	 * @return
 	 */
-	public Account createAccount(String saldoS) throws NumberFormatException {
+	public int createAccount(String saldoS, String player) throws NumberFormatException {
 		int saldo = Integer.parseInt(saldoS);
-		Account account = new Account(accountNumberCounter++, saldo); //, bankURI, playerURI);
+		Account account = new Account(accountNumberCounter++, saldo, player); //, bankURI, playerURI);
 		accountMap.put(account.getAccountNumber(), account);
-		return account;
+		return account.getAccountNumber();
 	}
 	
 	/**
-	 * Gibt einen Account zurueck
+	 * Gibt den Saldo eines Account zurueck
 	 * @param accNumber
 	 * @throws NumberFormatException, wenn "accNumber" ungueltig
 	 * @return
 	 */
-	public Account getAccount(String accNumberS) throws NumberFormatException {
+	public String getAccountSaldo(String accNumberS) throws NumberFormatException {
 		int accNumber = Integer.parseInt(accNumberS);
-		return accountMap.get(accNumber);
+		return String.valueOf(accountMap.get(accNumber).getSaldo());
+	}
+	
+	public String getAccountPlayer(String accNumberS) throws NumberFormatException {
+		int accNumber = Integer.parseInt(accNumberS);
+		return String.valueOf(accountMap.get(accNumber).getPlayer());
+	}
+	
+	public List<String> getAccountURIs() {
+		List<String> res = new ArrayList<>();
+		for(Account acc : accountMap.values()) {
+			res.add(getSubURI() + "/accounts/" + acc.getAccountNumber());
+		}
+		return res;
 	}
 	
 	/**
@@ -69,47 +86,87 @@ public class Bank {
 		return String.valueOf(bankNumber);
 	}
 	
-	/**
-	 * Ueberweist einen Geldbetrag an ein Account
-	 * @param to, Accountnummer als String
-	 * @param amountS, Wert als String
-	 * @throws NumberFormatException, wenn "amountS" oder "toS" ungueltig
-	 * @return
-	 */
-	public boolean addAmount(String toS, String amountS) throws NumberFormatException {
-		int amountI = Integer.parseInt(amountS);
-		int to = Integer.parseInt(toS);
-		
-		if(accountMap.containsKey(to)) {
-			Account acc = accountMap.get(to);
-			Account bankAcc = new Account(accountNumberCounter++);
-			Transfer transfer = new Transfer(bankAcc, acc, amountI);
-			transferMap.put(transferNumberCounter++, transfer);
-			return transfer.run();
-		}
-		return false;
+	public String getGameURI() {
+		return gameURI;
 	}
 	
 	/**
-	 * Zieht einen Geldbetrag von einem Account ab (sofern ausreichender Saldo)
-	 * @param from, Accountnummer als String
-	 * @param amountS, Wert als String
-	 * @throws NumberFormatException, wenn "amountS" oder "fromS" ungueltig
+	 * Gibt die (Sub-) URI zurueck
+	 * Bsp. /banks/43
 	 * @return
 	 */
-	public boolean subtractAmount(String fromS, String amountS) throws NumberFormatException {
-		int amountI = Integer.parseInt(amountS);
-		int from = Integer.parseInt(fromS);
-		
-		if(accountMap.containsKey(from)) {
-			Account acc = accountMap.get(from);
-			Account bankAcc = new Account(accountNumberCounter++);
-			Transfer transfer = new Transfer(acc, bankAcc, amountI);
-			transferMap.put(transferNumberCounter++, transfer);
-			return transfer.run();
-		}
-		return false;
+	public String getSubURI() {
+		return "/banks/" + this.getBankNumber();
 	}
+	
+	/**
+	 * Gibt alle Transfers zurueck
+	 * @throws NumberFormatException, wenn "idS" ungueltig
+	 * @return
+	 */
+	public List<Transfer> getTransfers() {
+		return new ArrayList<>(transferMap.values());
+	}
+	
+	/**
+	 * 
+	 * @param idS
+	 * @return
+	 * @throws NumberFormatException
+	 */
+	public Transfer getTransfer(String idS) throws NumberFormatException {
+		int id = Integer.parseInt(idS);
+		
+		return transferMap.get(id);
+	}
+	
+	public Transaction getTransaction(String tidS) throws NumberFormatException {
+		int tid = Integer.parseInt(tidS);
+		
+		return transactionMap.get(tid);
+	}
+ 	
+//	/**
+//	 * Ueberweist einen Geldbetrag an ein Account
+//	 * @param to, Accountnummer als String
+//	 * @param amountS, Wert als String
+//	 * @throws NumberFormatException, wenn "amountS" oder "toS" ungueltig
+//	 * @return
+//	 */
+//	public boolean addAmount(String toS, String amountS) throws NumberFormatException {
+//		int amountI = Integer.parseInt(amountS);
+//		int to = Integer.parseInt(toS);
+//		
+//		if(accountMap.containsKey(to)) {
+//			Account acc = accountMap.get(to);
+//			Account bankAcc = new Account(accountNumberCounter++);
+//			Transfer transfer = new Transfer(bankAcc, acc, amountI);
+//			transferMap.put(transferNumberCounter++, transfer);
+//			return transfer.run();
+//		}
+//		return false;
+//	}
+//	
+//	/**
+//	 * Zieht einen Geldbetrag von einem Account ab (sofern ausreichender Saldo)
+//	 * @param from, Accountnummer als String
+//	 * @param amountS, Wert als String
+//	 * @throws NumberFormatException, wenn "amountS" oder "fromS" ungueltig
+//	 * @return
+//	 */
+//	public boolean subtractAmount(String fromS, String amountS) throws NumberFormatException {
+//		int amountI = Integer.parseInt(amountS);
+//		int from = Integer.parseInt(fromS);
+//		
+//		if(accountMap.containsKey(from)) {
+//			Account acc = accountMap.get(from);
+//			Account bankAcc = new Account(accountNumberCounter++);
+//			Transfer transfer = new Transfer(acc, bankAcc, amountI);
+//			transferMap.put(transferNumberCounter++, transfer);
+//			return transfer.run();
+//		}
+//		return false;
+//	}
 	
 	/**
 	 * Ueberweist einen Geldbetrag von einem Account zum Anderen (sofern ausreichender Saldo)
@@ -119,19 +176,35 @@ public class Bank {
 	 * @throws NumberFormatException, wenn "amountS", "fromS" oder "toS" ungueltig
 	 * @return
 	 */
-	public boolean transfer(String fromS, String toS, String amountS) throws NumberFormatException {
-		int amountI = Integer.parseInt(amountS);
+	public int transfer(String fromS, String toS, String amountS, String reason) throws NumberFormatException, IllegalArgumentException {
+		int amount = Integer.parseInt(amountS);
 		int from = Integer.parseInt(fromS);
 		int to = Integer.parseInt(toS);
 		
+		if(to == from) {
+			throw new IllegalArgumentException("angegebene Accounts sind identisch");
+		}
+		Transfer transfer = null;
+		if(from == 0 && accountMap.containsKey(to)) {
+			Account bankAcc = new Account(accountNumberCounter++);
+			Account accTo = accountMap.get(to);
+			transfer = new Transfer(bankAcc, accTo, amount, reason, transferNumberCounter++);
+		} else if(to == 0 && accountMap.containsKey(from)) {
+			Account bankAcc = new Account(accountNumberCounter++);
+			Account fromAcc = accountMap.get(from);
+			transfer = new Transfer(fromAcc, bankAcc, amount, reason, transferNumberCounter++);
+			transferMap.put(transfer.getID(), transfer);
+		}
 		if(accountMap.containsKey(from) && accountMap.containsKey(to)) {
 			Account accFrom = accountMap.get(from);
 			Account accTo = accountMap.get(to);
-			Transfer transfer = new Transfer(accFrom, accTo, amountI);
-			transferMap.put(transferNumberCounter++, transfer);
-			return transfer.run();
+			transfer = new Transfer(accFrom, accTo, amount, reason, transferNumberCounter++);
+			transferMap.put(transfer.getID(), transfer);
 		}
-		return false;
+		if(transfer.run()) {
+			return transfer.getID();
+		}
+		throw new IllegalArgumentException("Transfer konnte nicht ausgefuehrt werden");
 	}
 	
 	/**
@@ -139,13 +212,14 @@ public class Bank {
 	 * @param tid, Transaction ID
 	 * @throws NumberFormatException, wenn "tid" ungueltig
 	 */
-	public void createTransaction(String tid) throws NumberFormatException {
-		int tidI = Integer.parseInt(tid);
+	private Transaction createTransaction(String tidS) throws NumberFormatException {
+		int tid = Integer.parseInt(tidS);
 		
-		if(!transactionMap.containsKey(tidI)) {
-			Transaction transaction = new Transaction(tidI);
-			transactionMap.put(tidI, transaction);
+		if(!transactionMap.containsKey(tid)) {
+			Transaction transaction = new Transaction(tid);
+			transactionMap.put(tid, transaction);
 		}
+		return transactionMap.get(tid);
 	}
 	
 	/**
@@ -157,62 +231,63 @@ public class Bank {
 	 * @param to, Accountnumber
 	 * @param amountS
 	 * @throws NumberFormatException, wenn "tidS", "fromS", "toS" oder "amountS" ungueltig
-	 * @return boolean ob Transfer erfolgreich zur Transaction hinzugefuegt wurde
+	 * @return 
 	 */
-	public boolean addTransferToTransaction(String tidS, String fromS, String toS, String amountS) throws NumberFormatException {
+	public int addTransferToTransaction(String tidS, String fromS, String toS, String amountS, String reason) throws NumberFormatException, IllegalArgumentException {
 		int amount = Integer.parseInt(amountS);
 		int tid = Integer.parseInt(tidS);
 		int from = Integer.parseInt(fromS);
 		int to = Integer.parseInt(toS);
 		Transaction transaction = null;
+		Transfer transfer = null;
 		
 		if(from == to) {
-			return false;
+			throw new IllegalArgumentException("angegebene Accounts sind identisch");
 		}
 		if(!transactionMap.containsKey(tid)) {
-			return false;
+//			throw new IllegalArgumentException("Transaction ID nicht gefunden");
+			transaction = createTransaction(tidS);
 		} else {
 			transaction = transactionMap.get(tid);
 		}
 		if(from == 0 && accountMap.containsKey(to)) {
 			Account bankAcc = new Account(accountNumberCounter++);
 			Account accTo = accountMap.get(to);
-			Transfer transfer = new Transfer(bankAcc, accTo, amount);
+			transfer = new Transfer(bankAcc, accTo, amount, reason, transferNumberCounter++);
+			transferMap.put(transfer.getID(), transfer);
 			transaction.addTransfer(transfer);
-			return true;
 		} else if(to == 0 && accountMap.containsKey(from)) {
 			Account bankAcc = new Account(accountNumberCounter++);
 			Account fromAcc = accountMap.get(from);
-			Transfer transfer = new Transfer(fromAcc, bankAcc, amount);
+			transfer = new Transfer(fromAcc, bankAcc, amount, reason, transferNumberCounter++);
+			transferMap.put(transfer.getID(), transfer);
 			transaction.addTransfer(transfer);
-			return true;
 		}
 		if(accountMap.containsKey(from) && accountMap.containsKey(to)) {
 			Account accFrom = accountMap.get(from);
 			Account accTo = accountMap.get(to);
-			Transfer transfer = new Transfer(accFrom, accTo, amount);
+			transfer = new Transfer(accFrom, accTo, amount, reason, transferNumberCounter++);
+			transferMap.put(transfer.getID(), transfer);
 			transaction.addTransfer(transfer);
-			return true;
 		}
-		return false;
+		return transfer.getID();
 	}
 	
 	/**
 	 * Fuehrt alle einzelnen Transfers einer Transaction aus
 	 * @param tidS
-	 * @return boolean, ob alle Transfer erfolgreich ausgefuehrt
 	 */
-	public boolean commitTransaction(String tidS) throws NumberFormatException {
+	public void commitTransaction(String tidS) throws NumberFormatException, IllegalArgumentException {
 		int tid = Integer.parseInt(tidS);
 		
 		if(transactionMap.containsKey(tid)) {
 			Transaction transaction = transactionMap.get(tid);
 			if(transaction.commit()) {
 				transactionMap.remove(tid);
-				return true;
+			} else {
+				throw new IllegalArgumentException("Transaction konnte nicht vollstaendig ausgefuehrt werden");
 			}
 		}
-		return false;
 	}
 	
 	/**

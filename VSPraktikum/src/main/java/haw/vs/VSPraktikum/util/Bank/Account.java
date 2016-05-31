@@ -16,9 +16,12 @@ public class Account {
 //	private String playerURI;
 //	private String accountURI;
 	
-	public Account(int accountNumber, int saldo) {//, String bankURI, String playerURI) {
+	private String player;
+	
+	public Account(int accountNumber, int saldo, String player) {//, String bankURI, String playerURI) {
 		this.accountNumber = accountNumber;
 		this.saldo = saldo;
+		this.player = player;
 //		this.bankURI = bankURI;
 //		this.playerURI = playerURI;
 	}
@@ -26,6 +29,7 @@ public class Account {
 	public Account(int accountNumber) {
 		this.accountNumber = accountNumber;
 		this.saldo = Integer.MAX_VALUE / 2;
+		this.player = "BankAccount";
 	}
 	
 	public void addAmount(int amount) {
@@ -47,5 +51,9 @@ public class Account {
 	
 	public int getSaldo() {
 		return saldo;
+	}
+	
+	public String getPlayer() {
+		return player;
 	}
 }

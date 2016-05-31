@@ -14,11 +14,15 @@ public class Transfer {
 	private Account accFrom;
 	private Account accTo;
 	private int amount;
+	private String reason;
+	private int id;
 	
-	public Transfer(Account from, Account to, int amount) {
+	public Transfer(Account from, Account to, int amount, String reason, int id) {
 		this.accFrom = from;
 		this.accTo = to;
 		this.amount = amount;
+		this.reason = reason;
+		this.id = id;
 	}
 
 	/**
@@ -60,5 +64,19 @@ public class Transfer {
 	 */
 	public int getAmount() {
 		return amount;
+	}
+	
+	/**
+	 * @return the reason
+	 */
+	public String getReason() {
+		return reason;
+	}
+	
+	/**
+	 * @return the id
+	 */
+	public int getID() {
+		return id;
 	}
 }
