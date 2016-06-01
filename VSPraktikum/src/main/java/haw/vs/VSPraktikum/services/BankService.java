@@ -5,18 +5,18 @@ import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
-
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import haw.vs.VSPraktikum.util.YellowpagesData;
 import haw.vs.VSPraktikum.util.Bank.Bank;
 import haw.vs.VSPraktikum.util.Bank.Transaction;
 import haw.vs.VSPraktikum.util.Bank.Transfer;
@@ -38,15 +38,20 @@ public class BankService {
 	 * Service URI e.g. http://localhost:4567/services/255
 	 */
 	private static String URI;
-
+	/**
+	 * 
+	 */
+	private static String EVENT_SERVICE_ID = "232";
+	private static YellowpagesData eventService = EventServiceProvider.getService(EVENT_SERVICE_ID);
+	
 	public static void main(String[] args) {
 		try {
 			URI = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
 		} catch(UnknownHostException e) {
 		}
-
+		
 		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", "http://172.18.0.73:4567/bank");
-
+		
 		/**
 		 * Erzeugt eine neue Bank
 		 */
@@ -58,7 +63,7 @@ public class BankService {
 			res.status(HttpStatus.CREATED_201);
 			return "";
 		});
-
+		
 		/**
 		 * Liste mit allen Banken
 		 */
@@ -72,14 +77,14 @@ public class BankService {
 			res.type("application/json");
 			return jsn;
 		});
-
+		
 		/**
 		 * TODO: was wird hier gemacht?
 		 */
 		put("/banks/:bankNum", (req, res) -> {
 			return "not implemented";
 		});
-
+		
 		/**
 		 * Gibt eine spezifische Bank zurueck
 		 */
@@ -95,14 +100,14 @@ public class BankService {
 				jsn.put("accounts", URI + bank.getSubURI() + "/accounts");
 				jsn.put("transfers", URI + bank.getSubURI() + "/transfers");
 				res.type("application/json");
-
+				
 				return jsn;
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Liste mit allen Transferen einer Bank
 		 */
@@ -117,14 +122,14 @@ public class BankService {
 				JSONObject jsn = new JSONObject();
 				jsn.put("transfers", bank.getTransfers());
 				res.type("application/json");
-
+				
 				return jsn;
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Gibt fuer eine spezifische Bank einen bestimmten Transfer zurueck
 		 */
@@ -149,9 +154,9 @@ public class BankService {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
 			}
-
+			
 		});
-
+		
 		/**
 		 * Ueberweist einen Geldbetrag von einem Account zum Anderen Wenn im QueryParams eine Transaction ID gesetzt ist
 		 * -> erzeugt Transaction ( ../to/4/300?transaction=42 )
@@ -163,7 +168,7 @@ public class BankService {
 				String accTo = req.params(":accountToNum");
 				String amount = req.params(":amount");
 				String tid = req.queryParams("transaction");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -175,19 +180,26 @@ public class BankService {
 				} else {
 					transferID = bank.addTransferToTransaction(tid, accFrom, accTo, amount, req.body().toString());
 				}
-
+				
 				res.header(HttpHeader.LOCATION.asString(), URI + bank.getSubURI() + "/transfers/" + transferID);
 				res.status(HttpStatus.CREATED_201);
-
-				// TODO: im response fehlt create Event
-
+				
+				JSONObject eventJSN = new JSONObject();
+				eventJSN.put("game", bank.getGameURI());
+				eventJSN.put("type", "bank transfer");
+				eventJSN.put("name", "bank transfer");
+				eventJSN.put("reason", req.body().toString());
+				eventJSN.put("resource", bank.getSubURI() + "/transfers/" + transferID);
+				eventJSN.put("player", "foo");
+				postEvent(eventJSN);
+				
 				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Ueberweist einen Geldbetrag von der Bank zum Account Wenn im QueryParams eine Transaction ID gesetzt ist ->
 		 * erzeugt Transaction
@@ -198,7 +210,7 @@ public class BankService {
 				String accTo = req.params(":accountToNum");
 				String amount = req.params(":amount");
 				String tid = req.queryParams("transaction");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -210,19 +222,26 @@ public class BankService {
 				} else {
 					transferID = bank.addTransferToTransaction(tid, "0", accTo, amount, req.body().toString());
 				}
-
+				
 				res.header(HttpHeader.LOCATION.asString(), URI + bank.getSubURI() + "/transfers/" + transferID);
 				res.status(HttpStatus.CREATED_201);
-
-				// TODO: im response fehlt create Event
-
+				
+				JSONObject eventJSN = new JSONObject();
+				eventJSN.put("game", bank.getGameURI());
+				eventJSN.put("type", "bank transfer");
+				eventJSN.put("name", "bank transfer");
+				eventJSN.put("reason", req.body().toString());
+				eventJSN.put("resource", bank.getSubURI() + "/transfers/" + transferID);
+				eventJSN.put("player", "foo");
+				postEvent(eventJSN);
+				
 				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Zieht von einem Account einen Betrag ab Wenn im QueryParams eine Transaction ID gesetzt ist -> erzeugt
 		 * Transaction
@@ -233,7 +252,7 @@ public class BankService {
 				String accFrom = req.params(":accountFromNum");
 				String amount = req.params(":amount");
 				String tid = req.queryParams("transaction");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -245,19 +264,26 @@ public class BankService {
 				} else {
 					transferID = bank.addTransferToTransaction(tid, accFrom, "0", amount, req.body().toString());
 				}
-
+				
 				res.header(HttpHeader.LOCATION.asString(), URI + bank.getSubURI() + "/transfers/" + transferID);
 				res.status(HttpStatus.CREATED_201);
-
-				// TODO: im response fehlt create Event
-
+				
+				JSONObject eventJSN = new JSONObject();
+				eventJSN.put("game", bank.getGameURI());
+				eventJSN.put("type", "bank transfer");
+				eventJSN.put("name", "bank transfer");
+				eventJSN.put("reason", req.body().toString());
+				eventJSN.put("resource", bank.getSubURI() + "/transfers/" + transferID);
+				eventJSN.put("player", "foo");
+				postEvent(eventJSN);
+				
 				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Gibt den Status einer spezifischen Transaction zueruck
 		 */
@@ -265,7 +291,7 @@ public class BankService {
 			try {
 				String bankNum = req.params(":bankNum");
 				String tid = req.params(":tid");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -278,7 +304,7 @@ public class BankService {
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Commitet (fuehrt aus) eine spezifische Transaction
 		 */
@@ -287,7 +313,7 @@ public class BankService {
 				String bankNum = req.params(":bankNum");
 				String tid = req.params(":tid");
 				String state = req.queryParams("state");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -309,7 +335,7 @@ public class BankService {
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Entfernt eine Transaction
 		 */
@@ -317,7 +343,7 @@ public class BankService {
 			try {
 				String bankNum = req.params(":bankNum");
 				String tid = req.params(":tid");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -331,14 +357,14 @@ public class BankService {
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Liste mit allen Accounts
 		 */
 		get("/banks/:bankNum/accounts", (req, res) -> {
 			try {
 				String bankNum = req.params(":bankNum");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -354,14 +380,14 @@ public class BankService {
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Erzeugt einen neuen Account
 		 */
 		post("/banks/:bankNum/accounts", (req, res) -> {
 			try {
 				String bankNum = req.params(":bankNum");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -371,7 +397,7 @@ public class BankService {
 				String player = jsnBody.getString("player");
 				int saldo = jsnBody.getInt("saldo");
 				int accID = bank.createAccount(saldo, player);
-
+				
 				res.header(HttpHeader.LOCATION.asString(), URI + bank.getSubURI() + "/accounts/" + accID);
 				res.status(HttpStatus.CREATED_201);
 				return "done";
@@ -380,7 +406,7 @@ public class BankService {
 				return e.getMessage();
 			}
 		});
-
+		
 		/**
 		 * Gibt den Saldo eines spezifischen Accounts zurueck
 		 */
@@ -388,7 +414,7 @@ public class BankService {
 			try {
 				String bankNum = req.params(":bankNum");
 				String accNum = req.params(":accountNum");
-
+				
 				Bank bank = bankMap.get(bankNum);
 				if(bank == null) {
 					res.status(HttpStatus.NOT_FOUND_404);
@@ -403,5 +429,17 @@ public class BankService {
 				return e.getMessage();
 			}
 		});
+	}
+	
+	private static void postEvent(JSONObject body) {
+		try {
+			Unirest.post(eventService.getUri() + "/games")
+				.header("accept", "application/json")
+				.header("Content-Type", "application/json")
+				.body(body)
+				.asJson();
+		} catch(UnirestException e) {
+			// foo
+		}
 	}
 }
