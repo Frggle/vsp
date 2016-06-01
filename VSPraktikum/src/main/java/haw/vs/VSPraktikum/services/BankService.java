@@ -30,7 +30,7 @@ public class BankService {
 	/**
 	 * generate unique banknumbers
 	 */
-	private static int bankNumberCounter = 0;
+	private static int bankNumberCounter = 1;
 	/**
 	 * Service URI e.g. http://localhost:4567/services/255
 	 */
@@ -43,7 +43,6 @@ public class BankService {
 		}
 		
 		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", "http://172.18.0.73:4567/bank");
-		
 		
 		/**
 		 * Erzeugt eine neue Bank
@@ -180,7 +179,7 @@ public class BankService {
 				
 				// TODO: im response fehlt create Event
 				
-				return "";
+				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
@@ -215,7 +214,7 @@ public class BankService {
 				
 				// TODO: im response fehlt create Event
 				
-				return "";
+				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
@@ -250,7 +249,7 @@ public class BankService {
 				
 				// TODO: im response fehlt create Event
 				
-				return "";
+				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
@@ -292,11 +291,17 @@ public class BankService {
 					res.status(HttpStatus.NOT_FOUND_404);
 					return "Die Bank " + bankNum + " wurde nicht gefunden";
 				}
+				if(bank.getTransaction(tid) == null) {
+					res.status(HttpStatus.NOT_FOUND_404);
+					return "Transaction " + tid + " wurde nicht gefunden";
+				}
 				if(state == null || state == "commit") {
 					bank.commitTransaction(tid);
+				} else {
+					res.status(HttpStatus.NOT_IMPLEMENTED_501);
+					return "not implemented";
 				}
-				res.status(HttpStatus.NOT_IMPLEMENTED_501);
-				return "not implemented";
+				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
@@ -362,12 +367,12 @@ public class BankService {
 				}
 				JSONObject jsnBody = new JSONObject(req.body());
 				String player = jsnBody.getString("player");
-				String saldo = jsnBody.getString("saldo");
+				int saldo = jsnBody.getInt("saldo");
 				int accID = bank.createAccount(saldo, player);
 				
 				res.header(HttpHeader.LOCATION.asString(), URI + bank.getSubURI() + "/accounts/" + accID);
 				res.status(HttpStatus.CREATED_201);
-				return "";
+				return "done";
 			} catch(Exception e) {
 				res.status(HttpStatus.PRECONDITION_FAILED_412);
 				return e.getMessage();
@@ -388,7 +393,7 @@ public class BankService {
 					return "Die Bank " + bankNum + " wurde nicht gefunden";
 				}
 				JSONObject jsn = new JSONObject();
-				jsn.put("player", bank.getGameURI() + "/players/" + bank.getAccountPlayer(accNum));
+				jsn.put("player", bank.getAccountPlayer(accNum));
 				jsn.put("saldo", bank.getAccountSaldo(accNum));
 				return jsn;
 			} catch(Exception e) {

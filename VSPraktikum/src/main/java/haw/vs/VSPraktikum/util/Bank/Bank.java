@@ -28,8 +28,8 @@ public class Bank {
 	 */
 	private int bankNumber;
 	
-	private int accountNumberCounter = 0;
-	private int transferNumberCounter = 0;
+	private int accountNumberCounter = 1;
+	private int transferNumberCounter = 1;
 	private String gameURI;	// /games/42
 //	private String bankURI;
 //	private String playerURI;
@@ -47,8 +47,8 @@ public class Bank {
 	 * @throws NumberFormatException, wenn "saldo" ungueltig
 	 * @return
 	 */
-	public int createAccount(String saldoS, String player) throws NumberFormatException {
-		int saldo = Integer.parseInt(saldoS);
+	public int createAccount(int saldo, String player) throws NumberFormatException {
+//		int saldo = Integer.parseInt(saldo);
 		Account account = new Account(accountNumberCounter++, saldo, player); //, bankURI, playerURI);
 		accountMap.put(account.getAccountNumber(), account);
 		return account.getAccountNumber();
