@@ -1,41 +1,25 @@
 package haw.vs.VSPraktikum.util.Client;
 
+import haw.vs.VSPraktikum.gui.ClientUI;
+import haw.vs.VSPraktikum.services.EventServiceProvider;
+import haw.vs.VSPraktikum.util.YellowpagesData;
+
 public class Client {
-	String id;
-	String name;
-	String uri;
 	
-	public Client(String id, String name) {
-		this.id = id;
-		this.name = name;
-		this.uri = "";
-	}
+	private static String GAME_SERVICE_ID = "";
+	private static String BOARD_SERVICE_ID = "";
+	private static String BANK_SERVICE_ID = "";
 
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
+	private YellowpagesData gameService = EventServiceProvider.getService(GAME_SERVICE_ID);
+	private YellowpagesData boardService = EventServiceProvider.getService(BOARD_SERVICE_ID);
+	private YellowpagesData bankService = EventServiceProvider.getService(BANK_SERVICE_ID);
+	
+	public Client() {
+		
 	}
-
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
+	
+	public static void main(String[] args) {
+		new ClientUI().addElementToGamesList("bar");;
 	}
-
-	/**
-	 * @return the uri
-	 */
-	public String getUri() {
-		return uri;
-	}
-
-	/**
-	 * @param uri the uri to set
-	 */
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
+	
 }
