@@ -16,6 +16,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import haw.vs.VSPraktikum.Config;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 import haw.vs.VSPraktikum.util.Bank.Bank;
 import haw.vs.VSPraktikum.util.Bank.Transaction;
@@ -41,8 +42,7 @@ public class BankService {
 	/**
 	 * 
 	 */
-	private static String EVENT_SERVICE_ID = "232";
-	private static YellowpagesData eventService = EventServiceProvider.getService(EVENT_SERVICE_ID);
+	private static YellowpagesData eventService = ServiceProvider.getService(Config.EVENT_SERVICE);
 	
 	public static void main(String[] args) {
 		try {
@@ -50,7 +50,7 @@ public class BankService {
 		} catch(UnknownHostException e) {
 		}
 		
-		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", "http://172.18.0.73:4567/bank");
+		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", Config.BANK_DOCKER_URI);
 		
 		/**
 		 * Erzeugt eine neue Bank

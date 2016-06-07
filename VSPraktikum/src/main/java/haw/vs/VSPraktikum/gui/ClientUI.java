@@ -13,32 +13,54 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.eclipse.jetty.http.HttpHeader;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import haw.vs.VSPraktikum.Config;
+import haw.vs.VSPraktikum.services.ServiceProvider;
+import haw.vs.VSPraktikum.util.YellowpagesData;
 
 public class ClientUI {
 	
-	private String playerName;
+//	private YellowpagesData gameService = ServiceProvider.getService(Config.GAME_SERVICE);
+	private YellowpagesData gameService = new YellowpagesData();
+	private YellowpagesData boardService = ServiceProvider.getService(Config.BOARD_SERVICE);
+//	private YellowpagesData bankService = ServiceProvider.getService(Config.BANK_SERVICE);
+	
+	private String gameID;	// Spiel Nummer
+	private String pawnID;	// Spielfigur Nummer
+	private String playerName;	// Spieler Name
 	
 	private JFrame frame;
 	private JTextField textFieldPlayerName;
-	private JTextField textFieldDiceRes;
 	private JList<String> listAvailibleGames;
 	private JButton btnJoin;
 	private JButton btnRoll;
-	private JButton btnOk ;
+	private JButton btnOk;
+	private JButton btnUpdategames;
 	private JPanel panelDice;
 	private JPanel panelPlayer;
 	private JLabel lblEnterPlayerName;
+	private JLabel lblDiceRes;
 	private DefaultListModel<String> listModel;
 	
+	private static final ClientUI window = new ClientUI();
+	
 	/**
-	 * Launch the application.
+	 * @wbp.parser.entryPoint
 	 */
-	public static void main(String[] args) {
+	public void execute() {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ClientUI window = new ClientUI();
-					window.frame.setVisible(true);
+					window.initialize();
+					window.frame.setVisible(true);					
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -48,9 +70,13 @@ public class ClientUI {
 	
 	/**
 	 * Create the application.
+	 * @wbp.parser.entryPoint
 	 */
-	public ClientUI() {
-		initialize();
+	private ClientUI() {
+	}
+	
+	public static ClientUI getInstance() {
+		return window;
 	}
 	
 	/**
@@ -103,36 +129,108 @@ public class ClientUI {
 		
 		btnOk.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				/** nachdem Name bestaetigt sind keine Aenderungen mehr moeglich **/
 				playerName = textFieldPlayerName.getText();
+				btnOk.setEnabled(false);
+				textFieldPlayerName.setEnabled(false);
+				
+				/** erzeuge Spieler im Game **/
+//				createPlayer();
+				
+				/** aktiviere Game List **/ 
+				listAvailibleGames.setEnabled(true);
+				updateGamesList();
+				btnUpdategames.setEnabled(true);
+				btnJoin.setEnabled(true);
 			}
 		});
 		panelPlayer.add(btnOk);
 		
 		listAvailibleGames = new JList<>();
+		listAvailibleGames.setEnabled(false);
 		frame.getContentPane().add(listAvailibleGames, BorderLayout.CENTER);
 		
 		btnJoin = new JButton("join");
+		btnJoin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(!listAvailibleGames.isSelectionEmpty()) {
+					String selectedGame = listAvailibleGames.getSelectedValue();
+					gameID = selectedGame.substring(selectedGame.lastIndexOf("/") + 1);
+					lblDiceRes.setText("well done " + gameID);
+				}
+			}
+		});
+		btnJoin.setEnabled(false);
 		frame.getContentPane().add(btnJoin, BorderLayout.EAST);
 		
 		panelDice = new JPanel();
 		frame.getContentPane().add(panelDice, BorderLayout.SOUTH);
 		
 		btnRoll = new JButton("roll");
+		btnRoll.setEnabled(false);
 		panelDice.add(btnRoll);
 		
-		textFieldDiceRes = new JTextField();
-		panelDice.add(textFieldDiceRes);
-		textFieldDiceRes.setColumns(10);
+		lblDiceRes = new JLabel();
+		panelDice.add(lblDiceRes);
 		
 		listModel = new DefaultListModel<>();
 		listModel.addElement("foo");
 		listAvailibleGames.setModel(listModel);
+		
+		btnUpdategames = new JButton("update Games");
+		btnUpdategames.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnUpdategames.setEnabled(false);
+				updateGamesList();
+				btnUpdategames.setEnabled(true);
+			}
+		});
+		btnUpdategames.setEnabled(false);
+		frame.getContentPane().add(btnUpdategames, BorderLayout.WEST);
 	}
 	
-	public void addElementToGamesList(String element) {
-		DefaultListModel<String> model = (DefaultListModel<String>)listAvailibleGames.getModel();
-		model.addElement(element);
+	private void updateGamesList() {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					DefaultListModel<String> model = new DefaultListModel<>();
+					
+					HttpResponse<JsonNode> response = Unirest.get(boardService.getUri() + "/boards").asJson();
+					JSONArray jsnAry = response.getBody().getObject().getJSONArray("boardIds");
+					jsnAry.forEach(s -> {
+						model.addElement(s.toString());
+					});
+					listAvailibleGames.setModel(model);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	
+	private void joinGame() {
 		
-		listAvailibleGames.setModel(model);
+	}
+	
+	private void rollDice() {
+		try {
+			HttpResponse<JsonNode> response = Unirest.post(boardService.getUri() + "/boards/" + gameID + "/pawns/" + pawnID + "/roll").asJson();
+			lblDiceRes.setText(response.getStatus() == 200 ? "true" : "false");
+		} catch(UnirestException e) {
+			e.printStackTrace();
+		}
+		lblDiceRes.setText("Fehler");
+	}
+	
+	private void createPlayer() {
+		try {
+			JSONObject body = new JSONObject();
+			body.put("user", "/" + playerName);
+			HttpResponse<JsonNode> response = Unirest.post(gameService.getUri() + "/" + gameID + "/players").body(body).asJson();
+			String playerLocation = response.getHeaders().getFirst(HttpHeader.LOCATION.asString());
+			System.err.println("Playerlocation: " + playerLocation);
+		} catch(UnirestException e) {
+			e.printStackTrace();
+		}
 	}
 }

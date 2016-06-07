@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import com.mashape.unirest.http.Unirest;
 
 public class YellowServiceRegistration {
-	private static final String YELLOW_PAGES = "http://172.18.0.5:4567/services";
+	private static final String YELLOW_PAGES = "http://172.18.0.17:4567/services";
 //	private static final String YELLOW_PAGES = "http://141.22.34.15/cnt/172.18.0.5/4567/services";
 
 	public static void registerService(String name, String description, String service, String uri) {

@@ -12,15 +12,13 @@ import java.net.URL;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.json.JSONObject;
-
+import haw.vs.VSPraktikum.Config;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 
 public class DiceService {
 
-	private static String EVENT_ID = "232";
-	
 	public static void main(String[] args) {
-		registerService("jenny_marc_vsp_dice", "give a single dice roll", "dice", "http://172.18.0.71:4567/dice");
+		registerService("jenny_marc_vsp_dice", "give a single dice roll", "dice", Config.DICE_DOCKER_URI);
 
 		get("/dice", (request, response) -> {
 			response.status(200);
@@ -46,8 +44,8 @@ public class DiceService {
 		HttpURLConnection connection = null;
 
 		try {
-			YellowpagesData eventService = EventServiceProvider.getService(EVENT_ID);
-			URL url = new URL(eventService.getUri() + "events");
+			YellowpagesData eventService = ServiceProvider.getService(Config.EVENT_SERVICE);
+			URL url = new URL(eventService.getUri() + "/events");
 
 			String requestBody = "{ " + "\"game\":\"" + game + "\", " + "\"player\":\"" + player + "\"" + "}";
 

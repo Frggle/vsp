@@ -9,10 +9,11 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import haw.vs.VSPraktikum.Config;
 
 public class ServiceHelper {
 	
-	private static final String URI = "http://172.18.0.5:4567";
+	private static final String URI = Config.YELLOWPAGE_URI_WITH_VPN;
 	
 	/**
 	 * Durchsucht jeden Service im YellowPage nach searchName gleich dem Service-Name 
@@ -50,7 +51,10 @@ public class ServiceHelper {
 		ourServices.put("jenny_marc_vsp_bank", new ArrayList<>());
 		ourServices.put("jenny_marc_vsp_users", new ArrayList<>());
 		
-		ourServices.put("duc foo", new ArrayList<>());
+		ourServices.put("BoardServices_GerritDuc", new ArrayList<>());
+		ourServices.put("GameService_GerritDuc", new ArrayList<>());
+		ourServices.put("BrokerService_GerritDuc", new ArrayList<>());
+		ourServices.put("EventService_GerritDuc", new ArrayList<>());
 		
 		try {
 			getService(ourServices);
