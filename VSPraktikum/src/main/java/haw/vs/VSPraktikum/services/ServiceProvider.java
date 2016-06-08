@@ -74,9 +74,12 @@ public class ServiceProvider {
 			HttpResponse<JsonNode> resAllServices = Unirest.get(YELLOWPAGE_URI_WITH_VPN + "/services/of/name/" + service).asJson();
 			JSONArray jsnAry = resAllServices.getBody().getObject().getJSONArray("services");
 			/** nimm die letzte Service Nummer **/
-			String recentService = jsnAry.get(jsnAry.length() - 1).toString();
-			
-			YellowpagesData result = getService(recentService);
+			String recentService = null;
+			YellowpagesData result = null;
+			if(jsnAry.length() > 0) {
+				recentService = jsnAry.get(jsnAry.length() - 1).toString();
+				result = getService(recentService);
+			}
 			return result;
 		} catch(UnirestException e) {
 			e.printStackTrace();

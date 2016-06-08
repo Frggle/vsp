@@ -8,8 +8,6 @@ import com.mashape.unirest.http.Unirest;
 import haw.vs.VSPraktikum.services.ServiceProvider;
 
 public class YellowServiceRegistration {
-	// private static final String YELLOW_PAGES = "http://172.18.0.17:4567/services";
-	// private static final String YELLOW_PAGES = "http://141.22.34.15/cnt/172.18.0.5/4567/services";
 	
 	private static boolean alreadyInExistence = false;
 	
@@ -25,7 +23,6 @@ public class YellowServiceRegistration {
 					try {
 						HttpResponse<JsonNode> res = Unirest.get(ServiceProvider.YELLOWPAGE_URI_WITH_VPN + serviceUri.toString()).asJson();
 						/** loesche Registrierung nur, wenn sich die URI geaendert hat **/
-						System.err.println(res.getBody().getObject().getString("uri"));
 						if(!res.getBody().getObject().getString("uri").equals(uri)) {
 							Unirest.delete(ServiceProvider.YELLOWPAGE_URI_WITH_VPN + serviceUri.toString()).asJson();
 						} else {
