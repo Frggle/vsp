@@ -9,11 +9,15 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import haw.vs.VSPraktikum.Config;
+import haw.vs.VSPraktikum.services.ServiceProvider;
 
+/**
+ * Wird nicht benutzt!
+ * Nur als komfortable Abfragemöglichkeit
+ * @author Marc
+ *
+ */
 public class ServiceHelper {
-	
-	private static final String URI = Config.YELLOWPAGE_URI_WITH_VPN;
 	
 	/**
 	 * Durchsucht jeden Service im YellowPage nach searchName gleich dem Service-Name 
@@ -22,7 +26,7 @@ public class ServiceHelper {
 	 */
 	public static void getService(Map<String, List<String>> ourServices) throws UnirestException {
 		
-		HttpResponse<JsonNode> responseNode = Unirest.get(URI + "/services").asJson();
+		HttpResponse<JsonNode> responseNode = Unirest.get(ServiceProvider.YELLOWPAGE_URI_WITH_VPN + "/services").asJson();
 		JSONArray jsnArray = responseNode.getBody().getObject().getJSONArray("services"); // alle verfuegbaren Services
 		
 		/**
@@ -31,7 +35,7 @@ public class ServiceHelper {
 		 */
 		jsnArray.forEach((serviceUri) -> {
 			try {
-				HttpResponse<JsonNode> resonseNodeSingleService = Unirest.get(URI + serviceUri).asJson();
+				HttpResponse<JsonNode> resonseNodeSingleService = Unirest.get(ServiceProvider.YELLOWPAGE_URI_WITH_VPN + serviceUri).asJson();
 				String serviceName = resonseNodeSingleService.getBody().getObject().getString("name");
 				
 				for(String service : ourServices.keySet()) {

@@ -13,8 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.eclipse.jetty.http.HttpHeader;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,16 +20,14 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import haw.vs.VSPraktikum.Config;
 import haw.vs.VSPraktikum.services.ServiceProvider;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 
 public class ClientUI {
 	
-//	private YellowpagesData gameService = ServiceProvider.getService(Config.GAME_SERVICE);
-	private YellowpagesData gameService = new YellowpagesData();
-	private YellowpagesData boardService = ServiceProvider.getService(Config.BOARD_SERVICE);
-//	private YellowpagesData bankService = ServiceProvider.getService(Config.BANK_SERVICE);
+	private YellowpagesData gameService = ServiceProvider.getGameService();
+	private YellowpagesData boardService = ServiceProvider.getBoardService();
+	private YellowpagesData bankService = ServiceProvider.getBankService();
 	
 	private String gameID;	// Spiel Nummer
 	private String pawnID;	// Spielfigur Nummer
@@ -195,8 +191,10 @@ public class ClientUI {
 				try {
 					DefaultListModel<String> model = new DefaultListModel<>();
 					
-					HttpResponse<JsonNode> response = Unirest.get(boardService.getUri() + "/boards").asJson();
-					JSONArray jsnAry = response.getBody().getObject().getJSONArray("boardIds");
+//					HttpResponse<JsonNode> response = Unirest.get(boardService.getUri() + "/boards").asJson();
+//					JSONArray jsnAry = response.getBody().getObject().getJSONArray("boardIds");
+					HttpResponse<JsonNode> response = Unirest.get(gameService.getUri()).asJson();
+					JSONArray jsnAry = response.getBody().getObject().getJSONArray("games");
 					jsnAry.forEach(s -> {
 						model.addElement(s.toString());
 					});

@@ -16,7 +16,6 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import haw.vs.VSPraktikum.Config;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 import haw.vs.VSPraktikum.util.Bank.Bank;
 import haw.vs.VSPraktikum.util.Bank.Transaction;
@@ -42,7 +41,7 @@ public class BankService {
 	/**
 	 * 
 	 */
-	private static YellowpagesData eventService = ServiceProvider.getService(Config.EVENT_SERVICE);
+	private static YellowpagesData eventService = ServiceProvider.getEventService();
 	
 	public static void main(String[] args) {
 		try {
