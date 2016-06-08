@@ -50,7 +50,7 @@ public class BankService {
 		} catch(UnknownHostException e) {
 		}
 		
-		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", Config.BANK_DOCKER_URI);
+		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", URI + "/banks");
 		
 		/**
 		 * Erzeugt eine neue Bank

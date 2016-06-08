@@ -8,7 +8,9 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.json.JSONObject;
@@ -17,8 +19,15 @@ import haw.vs.VSPraktikum.util.YellowpagesData;
 
 public class DiceService {
 
+	private static String URI;
+	
 	public static void main(String[] args) {
-		registerService("jenny_marc_vsp_dice", "give a single dice roll", "dice", Config.DICE_DOCKER_URI);
+		try {
+			URI = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
+		} catch(UnknownHostException e) {
+		}
+		
+		registerService("jenny_marc_vsp_dice", "give a single dice roll", "dice", URI + "/dice");
 
 		get("/dice", (request, response) -> {
 			response.status(200);

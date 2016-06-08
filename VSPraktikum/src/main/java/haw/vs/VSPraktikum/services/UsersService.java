@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import haw.vs.VSPraktikum.Config;
 import haw.vs.VSPraktikum.util.User;
 
 /**
@@ -41,7 +39,7 @@ public class UsersService {
 		
 		Gson gson = new Gson();
 
-		registerService("jenny_marc_vsp_users", "The users service registers users of the system", "users", Config.USERS_DOCKER_URI);
+		registerService("jenny_marc_vsp_users", "The users service registers users of the system", "users", URI + "/users");
 
 		get("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
