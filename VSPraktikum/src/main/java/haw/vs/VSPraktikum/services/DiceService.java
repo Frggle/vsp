@@ -28,6 +28,10 @@ public class DiceService {
 		
 		registerService("jenny_marc_vsp_dice", "give a single dice roll", "dice", URI + "/dice");
 
+		get("/", (req, res) -> {
+			return "it works";
+		});
+		
 		get("/dice", (request, response) -> {
 			response.status(200);
 			response.type("application/json");

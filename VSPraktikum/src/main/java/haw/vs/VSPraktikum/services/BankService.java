@@ -51,6 +51,10 @@ public class BankService {
 		
 		registerService("jenny_marc_vsp_bank", "central bank in a game", "bank", URI + "/banks");
 		
+		get("/", (req, res) -> {
+			return "it works";
+		});
+		
 		/**
 		 * Erzeugt eine neue Bank
 		 */

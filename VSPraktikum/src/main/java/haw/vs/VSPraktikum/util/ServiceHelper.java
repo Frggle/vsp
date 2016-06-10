@@ -37,10 +37,12 @@ public class ServiceHelper {
 			try {
 				HttpResponse<JsonNode> resonseNodeSingleService = Unirest.get(ServiceProvider.YELLOWPAGE_URI_WITH_VPN + serviceUri).asJson();
 				String serviceName = resonseNodeSingleService.getBody().getObject().getString("name");
+				String uri = resonseNodeSingleService.getBody().getObject().getString("uri");
 				
 				for(String service : ourServices.keySet()) {
 					if(serviceName.equals(service)) {
-						ourServices.get(service).add(serviceUri.toString());
+						ourServices.get(service).add(0, serviceUri.toString());
+						ourServices.get(service).add(uri);
 					}
 				}
 			} catch(Exception e) {

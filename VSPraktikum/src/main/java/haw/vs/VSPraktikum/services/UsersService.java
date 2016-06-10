@@ -41,6 +41,10 @@ public class UsersService {
 
 		registerService("jenny_marc_vsp_users", "The users service registers users of the system", "users", URI + "/users");
 
+		get("/", (req, res) -> {
+			return "it works";
+		});
+		
 		get("/users", (request, response) -> {
 			response.status(HttpStatus.OK_200);
 			response.type("application/json");

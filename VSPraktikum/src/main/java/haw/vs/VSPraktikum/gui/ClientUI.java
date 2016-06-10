@@ -14,6 +14,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.mashape.unirest.http.HttpResponse;
@@ -27,9 +28,9 @@ public class ClientUI {
 	
 	private YellowpagesData gameService = ServiceProvider.getGameService();
 	private YellowpagesData boardService = ServiceProvider.getBoardService();
-	private YellowpagesData bankService = ServiceProvider.getBankService();
 	
 	private String gameID;	// Spiel Nummer
+	private String boardID;	// Board Nummer
 	private String pawnID;	// Spielfigur Nummer
 	private String playerName;	// Spieler Name
 	
@@ -153,6 +154,8 @@ public class ClientUI {
 					String selectedGame = listAvailibleGames.getSelectedValue();
 					gameID = selectedGame.substring(selectedGame.lastIndexOf("/") + 1);
 					lblDiceRes.setText("well done " + gameID);
+					joinGame();
+					btnRoll.setEnabled(true);
 				}
 			}
 		});
@@ -162,7 +165,12 @@ public class ClientUI {
 		panelDice = new JPanel();
 		frame.getContentPane().add(panelDice, BorderLayout.SOUTH);
 		
-		btnRoll = new JButton("roll");
+		btnRoll = new JButton("roll dice");
+		btnRoll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				rollDice();
+			}
+		});
 		btnRoll.setEnabled(false);
 		panelDice.add(btnRoll);
 		
@@ -191,8 +199,6 @@ public class ClientUI {
 				try {
 					DefaultListModel<String> model = new DefaultListModel<>();
 					
-//					HttpResponse<JsonNode> response = Unirest.get(boardService.getUri() + "/boards").asJson();
-//					JSONArray jsnAry = response.getBody().getObject().getJSONArray("boardIds");
 					HttpResponse<JsonNode> response = Unirest.get(gameService.getUri()).asJson();
 					JSONArray jsnAry = response.getBody().getObject().getJSONArray("games");
 					jsnAry.forEach(s -> {
@@ -207,12 +213,44 @@ public class ClientUI {
 	}
 	
 	private void joinGame() {
-		
+		try {
+			btnJoin.setEnabled(false);
+			listAvailibleGames.setEnabled(false);
+			/** erzeuge Spieler **/
+			JSONObject body = new JSONObject();
+			body.put("user", "/" + playerName);
+			body.put("ready", true);
+			HttpResponse<JsonNode> response = Unirest.post(gameService.getUri() + "/" + gameID + "/players").body(body).asJson();
+			String playerLocation = response.getHeaders().getFirst(HttpHeader.LOCATION.asString());
+			System.err.println("Playerlocation: " + playerLocation);
+			if(response.getStatus() == HttpStatus.OK_200) {
+				HttpResponse<JsonNode> mutexRes = Unirest.put(gameService.getUri() + "/" + gameID + "/players/turn?player=" + playerName).asJson();
+				System.err.println("Mutex Response Code: " + mutexRes.getStatus());
+				if(mutexRes.getStatus() == HttpStatus.OK_200 || mutexRes.getStatus() == HttpStatus.CREATED_201) {
+					/** erzeuge Board **/
+					JSONObject boardBody = new JSONObject();
+					boardBody.put("game", "/games/" + gameID);
+					HttpResponse<JsonNode> boardRes = Unirest.post(boardService.getUri()).body(boardBody).asJson();
+					System.err.println("Board Response: " + boardRes.getStatus());
+					String boardURI = boardRes.getBody().getObject().getString("id");
+					boardID = boardURI.substring(boardURI.lastIndexOf("/") + 1);
+					
+					/** erzeuge pawn **/
+					JSONObject pawnBody = new JSONObject();
+					pawnBody.put("player", "/games/" + gameID + "/players/" + playerName);
+					pawnBody.put("position", 0);
+					HttpResponse<JsonNode> pawnRes = Unirest.post(boardService.getUri() + "/" + gameID + "/pawns").asJson();
+					pawnID = pawnRes.getBody().getObject().getString("id");
+				}
+			}
+		} catch(UnirestException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void rollDice() {
 		try {
-			HttpResponse<JsonNode> response = Unirest.post(boardService.getUri() + "/boards/" + gameID + "/pawns/" + pawnID + "/roll").asJson();
+			HttpResponse<JsonNode> response = Unirest.post(boardService.getUri() + "/" + gameID + "/pawns/" + pawnID + "/roll").asJson();
 			lblDiceRes.setText(response.getStatus() == 200 ? "true" : "false");
 		} catch(UnirestException e) {
 			e.printStackTrace();
@@ -220,15 +258,12 @@ public class ClientUI {
 		lblDiceRes.setText("Fehler");
 	}
 	
-	private void createPlayer() {
-		try {
-			JSONObject body = new JSONObject();
-			body.put("user", "/" + playerName);
-			HttpResponse<JsonNode> response = Unirest.post(gameService.getUri() + "/" + gameID + "/players").body(body).asJson();
-			String playerLocation = response.getHeaders().getFirst(HttpHeader.LOCATION.asString());
-			System.err.println("Playerlocation: " + playerLocation);
-		} catch(UnirestException e) {
-			e.printStackTrace();
-		}
+	private void connectToGameService() {
+		/**
+		 * meldet sich beim Game oder Board Service, damit dieser uns mittels post(/client/turn)
+		 * informiert, wenn wir an der Reihe sind
+		 * -> wir stellen uns vor, das die Mutex in einer Queue sind die abgearbeitet wird und 
+		 * jedes mal den Client benachrichtigt
+		 */
 	}
 }
