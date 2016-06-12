@@ -28,21 +28,23 @@ import haw.vs.VSPraktikum.services.ServiceProvider;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 
 
-public class ClientUI {
+public class ClientUI_with_uri {
 	
 	private YellowpagesData gameService = ServiceProvider.getGameService();
 	private YellowpagesData boardService = ServiceProvider.getBoardService();
 	
-	private String gameID;	// 3
-	private String pawnURI;	// /pawns/mario
-	private String playerName;	// mario
-//	private String playerURI;	// /players/mario
+	private String gameURI;	// 		/games/3
+	private String pawnURI;	// 		/pawns/mario
+	private String playerName;	// 	mario
+	private String playerURI;	// 	/players/mario
+	
+	protected static boolean playerJoined = false;
 	
 	private static JFrame frame;
 	private JTextField textFieldPlayerName;
 	private JList<String> listAvailableGames;
 	private JButton btnJoin;
-	public JButton btnRoll;
+	protected JButton btnRoll;
 	private JButton btnOk;
 	private JButton btnCreateGame;
 	private JPanel panelDice;
@@ -51,7 +53,7 @@ public class ClientUI {
 	private JLabel lblDiceRes;
 	private DefaultListModel<String> listModel;
 	
-	private static final ClientUI window = new ClientUI();
+	private static final ClientUI_with_uri window = new ClientUI_with_uri();
 	
 	/**
 	 * @wbp.parser.entryPoint
@@ -61,7 +63,7 @@ public class ClientUI {
 			public void run() {
 				try {
 					window.initialize();
-					ClientUI.frame.setVisible(true);
+					ClientUI_with_uri.frame.setVisible(true);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -73,10 +75,10 @@ public class ClientUI {
 	 * Create the application.
 	 * @wbp.parser.entryPoint
 	 */
-	private ClientUI() {
+	private ClientUI_with_uri() {
 	}
 	
-	public static ClientUI getInstance() {
+	public static ClientUI_with_uri getInstance() {
 		return window;
 	}
 	
@@ -135,8 +137,6 @@ public class ClientUI {
 				btnOk.setEnabled(false);
 				textFieldPlayerName.setEnabled(false);
 				
-				/** erzeuge Spieler im Game **/
-				
 				/** aktiviere Game List **/
 				listAvailableGames.setEnabled(true);
 				updateGamesList();
@@ -154,9 +154,8 @@ public class ClientUI {
 		btnJoin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(!listAvailableGames.isSelectionEmpty()) {
-					String tmp = listAvailableGames.getSelectedValue();
-					gameID = tmp.substring(tmp.lastIndexOf("/") + 1);
-					lblDiceRes.setText("well done " + gameID);
+					gameURI = listAvailableGames.getSelectedValue();
+					lblDiceRes.setText("well done");
 					btnJoin.setEnabled(false);
 					listAvailableGames.setEnabled(false);
 					joinGame();
@@ -227,11 +226,11 @@ public class ClientUI {
 			JSONObject body = new JSONObject();
 			body.put("user", "/players/" + playerName);
 			body.put("ready", true);
-			body.put("client", url);
-			HttpResponse<JsonNode> response = Unirest.post(gameService.getUri() + "/" + gameID + "/players").body(body).asJson();
-//			playerURI = response.getBody().getObject().getString("id");
+			body.put("client", url);	// TODO: gameService kann damit noch nicht umgehen!!
+			HttpResponse<JsonNode> response = Unirest.post(gameService.getURL() + gameURI + "/players").body(body).asJson();
+			playerURI = response.getBody().getObject().getString("id");
 			if(response.getStatus() == HttpStatus.OK_200) {
-				btnRoll.setEnabled(true);
+				playerJoined = true;
 			} else {
 				
 			}
@@ -252,7 +251,7 @@ public class ClientUI {
 			gameBody.put("status", "Registration");
 			HttpResponse<JsonNode> gameRes = Unirest.post(gameService.getUri()).body(gameBody).asJson();
 			if(gameRes.getStatus() == HttpStatus.CREATED_201) {
-				gameID = String.valueOf(id);
+				gameURI = String.valueOf(id);
 				joinGame();
 			}
 		} catch(UnirestException e) {
@@ -265,14 +264,14 @@ public class ClientUI {
 	 */
 	private void rollDice() {
 		try {
-			HttpResponse<JsonNode> mutexRes = Unirest.put(gameService.getUri() + "/" + gameID + "/players/turn?player=/games/" + gameID + "/players/" + playerName).asJson();
+			HttpResponse<JsonNode> mutexRes = Unirest.put(gameService.getURL() + gameURI + "/players/turn?player=" + gameURI + playerURI).asJson();
 			System.err.println("Mutex Response Code: " + mutexRes.getStatus());
 			if(mutexRes.getStatus() == HttpStatus.OK_200 || mutexRes.getStatus() == HttpStatus.CREATED_201) {
-				HttpResponse<JsonNode> response = Unirest.post(boardService.getUri() + "/" + gameID + "/" + pawnURI + "/roll").asJson();
+				HttpResponse<JsonNode> response = Unirest.post(boardService.getURL() + gameURI + pawnURI + "/roll").asJson();
 				lblDiceRes.setText(response.getStatus() == 200 ? "true" : "false");
 				
 				/** release mutex **/
-				Unirest.delete(boardService.getUri() + "/" + gameID + "/players/turn");
+				Unirest.delete(boardService.getURL() + gameURI + "/players/turn");
 			}
 		} catch(UnirestException e) {
 			e.printStackTrace();
@@ -281,13 +280,16 @@ public class ClientUI {
 	}
 	
 	public static void main(String[] args) {
-		ClientUI clientUI = ClientUI.getInstance();
+		ClientUI_with_uri clientUI = ClientUI_with_uri.getInstance();
 		clientUI.execute();
 		
 		post("/client/turn", (req, res) -> {
-			clientUI.btnRoll.setEnabled(true);
-			JOptionPane.showMessageDialog(frame, "It's your turn!");
-			return "button enabled";
+			if(playerJoined) {
+				clientUI.btnRoll.setEnabled(true);
+				JOptionPane.showMessageDialog(frame, "It's your turn!");
+				return "button enabled";	
+			}
+			return "";
 		});
 	}
 	
