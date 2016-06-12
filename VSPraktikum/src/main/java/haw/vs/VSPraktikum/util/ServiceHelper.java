@@ -50,7 +50,7 @@ public class ServiceHelper {
 			}
 		});
 	}
-		
+
 	public static void main(String[] args) {
 		Map<String, List<String>> ourServices = new HashMap<>();
 		ourServices.put("jenny_marc_vsp_dice", new ArrayList<>());

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -13,7 +14,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,10 +29,10 @@ public class ClientUI {
 	private YellowpagesData gameService = ServiceProvider.getGameService();
 	private YellowpagesData boardService = ServiceProvider.getBoardService();
 	
-	private String gameID;	// Spiel Nummer
-	private String boardID;	// Board Nummer
-	private String pawnID;	// Spielfigur Nummer
-	private String playerName;	// Spieler Name
+	private String gameID;	// 3
+	private String pawnURI;	// /pawns/mario
+	private String playerName;	// mario
+//	private String playerURI;	// /players/mario
 	
 	private JFrame frame;
 	private JTextField textFieldPlayerName;
@@ -40,7 +40,7 @@ public class ClientUI {
 	private JButton btnJoin;
 	private JButton btnRoll;
 	private JButton btnOk;
-	private JButton btnUpdategames;
+	private JButton btnCreateGame;
 	private JPanel panelDice;
 	private JPanel panelPlayer;
 	private JLabel lblEnterPlayerName;
@@ -57,7 +57,7 @@ public class ClientUI {
 			public void run() {
 				try {
 					window.initialize();
-					window.frame.setVisible(true);					
+					window.frame.setVisible(true);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -132,12 +132,11 @@ public class ClientUI {
 				textFieldPlayerName.setEnabled(false);
 				
 				/** erzeuge Spieler im Game **/
-//				createPlayer();
 				
-				/** aktiviere Game List **/ 
+				/** aktiviere Game List **/
 				listAvailibleGames.setEnabled(true);
 				updateGamesList();
-				btnUpdategames.setEnabled(true);
+				btnCreateGame.setEnabled(true);
 				btnJoin.setEnabled(true);
 			}
 		});
@@ -151,8 +150,8 @@ public class ClientUI {
 		btnJoin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(!listAvailibleGames.isSelectionEmpty()) {
-					String selectedGame = listAvailibleGames.getSelectedValue();
-					gameID = selectedGame.substring(selectedGame.lastIndexOf("/") + 1);
+					String tmp = listAvailibleGames.getSelectedValue();
+					gameID = tmp.substring(tmp.lastIndexOf("/") + 1);
 					lblDiceRes.setText("well done " + gameID);
 					joinGame();
 					btnRoll.setEnabled(true);
@@ -181,16 +180,16 @@ public class ClientUI {
 		listModel.addElement("foo");
 		listAvailibleGames.setModel(listModel);
 		
-		btnUpdategames = new JButton("update Games");
-		btnUpdategames.addActionListener(new ActionListener() {
+		btnCreateGame = new JButton("create game");
+		btnCreateGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				btnUpdategames.setEnabled(false);
-				updateGamesList();
-				btnUpdategames.setEnabled(true);
+				btnCreateGame.setEnabled(false);
+				createAndJoinGame();
+				btnCreateGame.setEnabled(true);
 			}
 		});
-		btnUpdategames.setEnabled(false);
-		frame.getContentPane().add(btnUpdategames, BorderLayout.WEST);
+		btnCreateGame.setEnabled(false);
+		frame.getContentPane().add(btnCreateGame, BorderLayout.WEST);
 	}
 	
 	private void updateGamesList() {
@@ -212,58 +211,68 @@ public class ClientUI {
 		});
 	}
 	
+	/**
+	 * 
+	 */
 	private void joinGame() {
 		try {
 			btnJoin.setEnabled(false);
 			listAvailibleGames.setEnabled(false);
+			
 			/** erzeuge Spieler **/
 			JSONObject body = new JSONObject();
-			body.put("user", "/" + playerName);
+			body.put("user", "/players/" + playerName);
 			body.put("ready", true);
 			HttpResponse<JsonNode> response = Unirest.post(gameService.getUri() + "/" + gameID + "/players").body(body).asJson();
-			String playerLocation = response.getHeaders().getFirst(HttpHeader.LOCATION.asString());
-			System.err.println("Playerlocation: " + playerLocation);
+//			playerURI = response.getBody().getObject().getString("id");
 			if(response.getStatus() == HttpStatus.OK_200) {
-				HttpResponse<JsonNode> mutexRes = Unirest.put(gameService.getUri() + "/" + gameID + "/players/turn?player=" + playerName).asJson();
-				System.err.println("Mutex Response Code: " + mutexRes.getStatus());
-				if(mutexRes.getStatus() == HttpStatus.OK_200 || mutexRes.getStatus() == HttpStatus.CREATED_201) {
-					/** erzeuge Board **/
-					JSONObject boardBody = new JSONObject();
-					boardBody.put("game", "/games/" + gameID);
-					HttpResponse<JsonNode> boardRes = Unirest.post(boardService.getUri()).body(boardBody).asJson();
-					System.err.println("Board Response: " + boardRes.getStatus());
-					String boardURI = boardRes.getBody().getObject().getString("id");
-					boardID = boardURI.substring(boardURI.lastIndexOf("/") + 1);
-					
-					/** erzeuge pawn **/
-					JSONObject pawnBody = new JSONObject();
-					pawnBody.put("player", "/games/" + gameID + "/players/" + playerName);
-					pawnBody.put("position", 0);
-					HttpResponse<JsonNode> pawnRes = Unirest.post(boardService.getUri() + "/" + gameID + "/pawns").asJson();
-					pawnID = pawnRes.getBody().getObject().getString("id");
-				}
+				btnRoll.setEnabled(true);
+			} else {
+				
 			}
-		} catch(UnirestException e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	private void createAndJoinGame() {
+		try {
+			JSONObject gameBody = new JSONObject();
+			int id = ThreadLocalRandom.current().nextInt(10, 100);
+			gameBody.put("name", "VSP Game" + id);
+			gameBody.put("services", "/games/" + id + "/services");
+			gameBody.put("id", String.valueOf(id));
+			gameBody.put("components", "/games/" + id + "/components");
+			gameBody.put("players", "/games/" + id + "/players");
+			gameBody.put("status", "Registration");
+			HttpResponse<JsonNode> gameRes = Unirest.post(gameService.getUri()).body(gameBody).asJson();
+			if(gameRes.getStatus() == HttpStatus.CREATED_201) {
+				gameID = String.valueOf(id);
+				joinGame();
+			}
+		} catch(UnirestException e) {
+			
+		}
+	}
+	
+	/**
+	 * Client release Mutex wenn fertig!
+	 */
 	private void rollDice() {
 		try {
-			HttpResponse<JsonNode> response = Unirest.post(boardService.getUri() + "/" + gameID + "/pawns/" + pawnID + "/roll").asJson();
-			lblDiceRes.setText(response.getStatus() == 200 ? "true" : "false");
+			HttpResponse<JsonNode> mutexRes = Unirest.put(gameService.getUri() + "/" + gameID + "/players/turn?player=/games/" + gameID + "/players/" + playerName).asJson();
+			System.err.println("Mutex Response Code: " + mutexRes.getStatus());
+			if(mutexRes.getStatus() == HttpStatus.OK_200 || mutexRes.getStatus() == HttpStatus.CREATED_201) {
+				HttpResponse<JsonNode> response = Unirest.post(boardService.getUri() + "/" + gameID + "/" + pawnURI + "/roll").asJson();
+				lblDiceRes.setText(response.getStatus() == 200 ? "true" : "false");
+				
+				/** release mutex **/
+				Unirest.delete(boardService.getUri() + "/" + gameID + "/players/turn");
+			}
 		} catch(UnirestException e) {
 			e.printStackTrace();
 		}
 		lblDiceRes.setText("Fehler");
 	}
 	
-	private void connectToGameService() {
-		/**
-		 * meldet sich beim Game oder Board Service, damit dieser uns mittels post(/client/turn)
-		 * informiert, wenn wir an der Reihe sind
-		 * -> wir stellen uns vor, das die Mutex in einer Queue sind die abgearbeitet wird und 
-		 * jedes mal den Client benachrichtigt
-		 */
-	}
 }
