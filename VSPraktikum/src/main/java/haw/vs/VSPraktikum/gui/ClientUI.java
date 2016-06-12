@@ -1,9 +1,11 @@
 package haw.vs.VSPraktikum.gui;
 
+import static spark.Spark.post;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -24,6 +26,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import haw.vs.VSPraktikum.services.ServiceProvider;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 
+
 public class ClientUI {
 	
 	private YellowpagesData gameService = ServiceProvider.getGameService();
@@ -36,9 +39,9 @@ public class ClientUI {
 	
 	private JFrame frame;
 	private JTextField textFieldPlayerName;
-	private JList<String> listAvailibleGames;
+	private JList<String> listAvailableGames;
 	private JButton btnJoin;
-	private JButton btnRoll;
+	public JButton btnRoll;
 	private JButton btnOk;
 	private JButton btnCreateGame;
 	private JPanel panelDice;
@@ -134,7 +137,7 @@ public class ClientUI {
 				/** erzeuge Spieler im Game **/
 				
 				/** aktiviere Game List **/
-				listAvailibleGames.setEnabled(true);
+				listAvailableGames.setEnabled(true);
 				updateGamesList();
 				btnCreateGame.setEnabled(true);
 				btnJoin.setEnabled(true);
@@ -142,15 +145,15 @@ public class ClientUI {
 		});
 		panelPlayer.add(btnOk);
 		
-		listAvailibleGames = new JList<>();
-		listAvailibleGames.setEnabled(false);
-		frame.getContentPane().add(listAvailibleGames, BorderLayout.CENTER);
+		listAvailableGames = new JList<>();
+		listAvailableGames.setEnabled(false);
+		frame.getContentPane().add(listAvailableGames, BorderLayout.CENTER);
 		
 		btnJoin = new JButton("join");
 		btnJoin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(!listAvailibleGames.isSelectionEmpty()) {
-					String tmp = listAvailibleGames.getSelectedValue();
+				if(!listAvailableGames.isSelectionEmpty()) {
+					String tmp = listAvailableGames.getSelectedValue();
 					gameID = tmp.substring(tmp.lastIndexOf("/") + 1);
 					lblDiceRes.setText("well done " + gameID);
 					joinGame();
@@ -178,7 +181,7 @@ public class ClientUI {
 		
 		listModel = new DefaultListModel<>();
 		listModel.addElement("foo");
-		listAvailibleGames.setModel(listModel);
+		listAvailableGames.setModel(listModel);
 		
 		btnCreateGame = new JButton("create game");
 		btnCreateGame.addActionListener(new ActionListener() {
@@ -203,7 +206,7 @@ public class ClientUI {
 					jsnAry.forEach(s -> {
 						model.addElement(s.toString());
 					});
-					listAvailibleGames.setModel(model);
+					listAvailableGames.setModel(model);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -217,12 +220,15 @@ public class ClientUI {
 	private void joinGame() {
 		try {
 			btnJoin.setEnabled(false);
-			listAvailibleGames.setEnabled(false);
+			listAvailableGames.setEnabled(false);
+			
+			String url = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
 			
 			/** erzeuge Spieler **/
 			JSONObject body = new JSONObject();
 			body.put("user", "/players/" + playerName);
 			body.put("ready", true);
+			body.put("client", url);
 			HttpResponse<JsonNode> response = Unirest.post(gameService.getUri() + "/" + gameID + "/players").body(body).asJson();
 //			playerURI = response.getBody().getObject().getString("id");
 			if(response.getStatus() == HttpStatus.OK_200) {
@@ -273,6 +279,16 @@ public class ClientUI {
 			e.printStackTrace();
 		}
 		lblDiceRes.setText("Fehler");
+	}
+	
+	public static void main(String[] args) {
+		ClientUI clientUI = ClientUI.getInstance();
+		clientUI.execute();
+		
+		post("/client/turn", (req, res) -> {
+			clientUI.btnRoll.setEnabled(true);
+			return "button enabled";
+		});
 	}
 	
 }
