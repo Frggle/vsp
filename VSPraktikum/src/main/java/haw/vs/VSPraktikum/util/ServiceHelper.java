@@ -56,6 +56,7 @@ public class ServiceHelper {
 		ourServices.put("jenny_marc_vsp_dice", new ArrayList<>());
 		ourServices.put("jenny_marc_vsp_bank", new ArrayList<>());
 		ourServices.put("jenny_marc_vsp_users", new ArrayList<>());
+		ourServices.put("jenny_marc_vsp_client", new ArrayList<>());
 		
 		ourServices.put("BoardServices_GerritDuc", new ArrayList<>());
 		ourServices.put("GameService_GerritDuc", new ArrayList<>());

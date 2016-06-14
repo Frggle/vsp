@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -32,6 +33,7 @@ public class ClientUI_with_uri {
 	
 	private YellowpagesData gameService = ServiceProvider.getGameService();
 	private YellowpagesData boardService = ServiceProvider.getBoardService();
+	private YellowpagesData clientService = ServiceProvider.getClientService();
 	
 	private String gameURI;	// 		/games/3
 	private String pawnURI;	// 		/pawns/mario
@@ -220,13 +222,15 @@ public class ClientUI_with_uri {
 	 */
 	private void joinGame() {
 		try {
-			String url = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
+			/** melde Client beim ClientService an **/
+//			String url = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
+			registerClient();
 			
 			/** erzeuge Spieler **/
 			JSONObject body = new JSONObject();
 			body.put("user", "/players/" + playerName);
 			body.put("ready", true);
-			body.put("client", url);	// TODO: gameService kann damit noch nicht umgehen!!
+//			body.put("client", url);	// TODO: gameService kann damit noch nicht umgehen!!
 			HttpResponse<JsonNode> response = Unirest.post(gameService.getURL() + gameURI + "/players").body(body).asJson();
 			playerURI = response.getBody().getObject().getString("id");
 			if(response.getStatus() == HttpStatus.OK_200) {
@@ -279,18 +283,30 @@ public class ClientUI_with_uri {
 		lblDiceRes.setText("Fehler");
 	}
 	
+	private void registerClient() {
+		/** melde Client beim ClientService an **/
+		try {
+			String url = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
+			
+			JSONObject body = new JSONObject();
+			body.put("uri", url);
+			Unirest.post(clientService.getUri()).body(body);
+		} catch(UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) {
 		ClientUI_with_uri clientUI = ClientUI_with_uri.getInstance();
 		clientUI.execute();
 		
 		post("/client/turn", (req, res) -> {
 			if(playerJoined) {
-				clientUI.btnRoll.setEnabled(true);
 				JOptionPane.showMessageDialog(frame, "It's your turn!");
+				clientUI.btnRoll.setEnabled(true);
 				return "button enabled";	
 			}
 			return "";
 		});
 	}
-	
 }

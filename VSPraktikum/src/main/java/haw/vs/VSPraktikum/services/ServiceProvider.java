@@ -22,6 +22,7 @@ public class ServiceProvider {
 	private static final String diceService = "jenny_marc_vsp_dice";
 	private static final String bankService = "jenny_marc_vsp_bank";
 	private static final String userService = "jenny_marc_vsp_users";
+	private static final String clientService = "jenny_marc_vsp_client";
 	
 	private static final String boardService = "BoardServices_GerritDuc";
 	private static final String gameService = "GameService_GerritDuc";
@@ -113,5 +114,9 @@ public class ServiceProvider {
 	
 	public static YellowpagesData getEventService() {
 		return smallHelper(eventService);
+	}
+	
+	public static YellowpagesData getClientService() {
+		return smallHelper(clientService);
 	}
 }
