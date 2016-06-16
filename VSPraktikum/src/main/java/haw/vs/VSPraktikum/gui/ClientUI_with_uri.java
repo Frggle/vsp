@@ -28,17 +28,19 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import haw.vs.VSPraktikum.services.ServiceProvider;
 import haw.vs.VSPraktikum.util.YellowpagesData;
 
-
 public class ClientUI_with_uri {
 	
-	private YellowpagesData gameService = ServiceProvider.getGameService();
-	private YellowpagesData boardService = ServiceProvider.getBoardService();
+	private static YellowpagesData gameService = ServiceProvider.getGameService();
+	private static YellowpagesData boardService = ServiceProvider.getBoardService();
 	private YellowpagesData clientService = ServiceProvider.getClientService();
 	
-	private String gameURI;	// 		/games/3
-	private String pawnURI;	// 		/pawns/mario
-	private String playerName;	// 	mario
-	private String playerURI;	// 	/players/mario
+	/** relativ URIs **/
+	private static String gameURI;	// /games/3
+	private String pawnURI;
+	private static String playerURI;	// /games/3/players/mario
+	private String rollURI;
+	
+	private String playerName;	// mario
 	
 	protected static boolean playerJoined = false;
 	
@@ -222,19 +224,17 @@ public class ClientUI_with_uri {
 	 */
 	private void joinGame() {
 		try {
-			/** melde Client beim ClientService an **/
-//			String url = "http://" + InetAddress.getLocalHost().getHostAddress() + ":4567";
-			registerClient();
-			
 			/** erzeuge Spieler **/
 			JSONObject body = new JSONObject();
 			body.put("user", "/players/" + playerName);
 			body.put("ready", true);
-//			body.put("client", url);	// TODO: gameService kann damit noch nicht umgehen!!
 			HttpResponse<JsonNode> response = Unirest.post(gameService.getURL() + gameURI + "/players").body(body).asJson();
 			playerURI = response.getBody().getObject().getString("id");
 			if(response.getStatus() == HttpStatus.OK_200) {
 				playerJoined = true;
+				
+				/** melde Client beim ClientService an **/
+				registerClient();
 			} else {
 				
 			}
@@ -263,24 +263,58 @@ public class ClientUI_with_uri {
 		}
 	}
 	
-	/**
-	 * Client release Mutex wenn fertig!
-	 */
-	private void rollDice() {
+	private void setPawnURI() {
 		try {
-			HttpResponse<JsonNode> mutexRes = Unirest.put(gameService.getURL() + gameURI + "/players/turn?player=" + gameURI + playerURI).asJson();
-			System.err.println("Mutex Response Code: " + mutexRes.getStatus());
-			if(mutexRes.getStatus() == HttpStatus.OK_200 || mutexRes.getStatus() == HttpStatus.CREATED_201) {
-				HttpResponse<JsonNode> response = Unirest.post(boardService.getURL() + gameURI + pawnURI + "/roll").asJson();
-				lblDiceRes.setText(response.getStatus() == 200 ? "true" : "false");
-				
-				/** release mutex **/
-				Unirest.delete(boardService.getURL() + gameURI + "/players/turn");
+			HttpResponse<JsonNode> response = Unirest.get(gameService.getURL() + playerURI).asJson();
+			pawnURI = response.getBody().getObject().getString("pawn");
+		} catch(UnirestException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void setRollURI() {
+		try {
+			HttpResponse<JsonNode> response = Unirest.get(boardService.getURL() + pawnURI).asJson();
+			rollURI = response.getBody().getObject().getString("roll");
+		} catch(UnirestException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private boolean aquireRollMutex() {
+		try {
+			HttpResponse<JsonNode> response = Unirest.put(gameService.getURL() + gameURI + "/players/turn?player=" + playerURI).asJson();
+			if(response.getStatus() == HttpStatus.OK_200 || response.getStatus() == HttpStatus.CREATED_201) {
+				return true;
 			}
 		} catch(UnirestException e) {
 			e.printStackTrace();
 		}
-		lblDiceRes.setText("Fehler");
+		return false;
+	}
+	
+	private void rollDice() {
+		try {
+			/** setzt die pawn uri **/
+			setPawnURI();
+			
+			/** setzt die roll uri **/
+			setRollURI();
+			
+			/** braucht mutex um wuerfeln zu duerfen **/
+			if(aquireRollMutex()) {
+				HttpResponse<JsonNode> response = Unirest.post(boardService.getURL() + rollURI).asJson();
+				lblDiceRes.setText(response.getStatus() == 200 ? "true" : "false");
+				
+				// TODO: BoardService uebernimmt das move vom player pawn
+				
+				/** release mutex **/
+				Unirest.delete(boardService.getURL() + gameURI + "/players/turn");
+				lblDiceRes.setText("Fehler");
+			} 
+		} catch(UnirestException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void registerClient() {
@@ -290,7 +324,7 @@ public class ClientUI_with_uri {
 			
 			JSONObject body = new JSONObject();
 			body.put("uri", url);
-			Unirest.post(clientService.getUri()).body(body);
+			Unirest.post(clientService.getUri() + "?player=" + playerURI).body(body);
 		} catch(UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -304,7 +338,8 @@ public class ClientUI_with_uri {
 			if(playerJoined) {
 				JOptionPane.showMessageDialog(frame, "It's your turn!");
 				clientUI.btnRoll.setEnabled(true);
-				return "button enabled";	
+				
+				return "button enabled";
 			}
 			return "";
 		});
