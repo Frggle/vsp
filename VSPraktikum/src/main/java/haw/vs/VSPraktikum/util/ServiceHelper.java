@@ -35,9 +35,9 @@ public class ServiceHelper {
 		 */
 		jsnArray.forEach((serviceUri) -> {
 			try {
-				HttpResponse<JsonNode> resonseNodeSingleService = Unirest.get(ServiceProvider.YELLOWPAGE_URI_WITH_VPN + serviceUri).asJson();
-				String serviceName = resonseNodeSingleService.getBody().getObject().getString("name");
-				String uri = resonseNodeSingleService.getBody().getObject().getString("uri");
+				HttpResponse<JsonNode> responseNodeSingleService = Unirest.get(ServiceProvider.YELLOWPAGE_URI_WITH_VPN + serviceUri).asJson();
+				String serviceName = responseNodeSingleService.getBody().getObject().getString("name");
+				String uri = responseNodeSingleService.getBody().getObject().getString("uri");
 				
 				for(String service : ourServices.keySet()) {
 					if(serviceName.equals(service)) {

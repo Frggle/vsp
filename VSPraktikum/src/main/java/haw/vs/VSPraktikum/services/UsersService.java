@@ -59,9 +59,10 @@ public class UsersService {
 			response.status(HttpStatus.OK_200);
 
 			User user = gson.fromJson(request.body(), User.class);
+			user.setUri(URI + user.getID());
 
 			if(isValid(user)) {
-				response.status(HttpStatus.OK_200);
+				response.status(HttpStatus.CREATED_201);
 				usersMap.put(user.getName(), user);	// update user in map
 				response.header(HttpHeader.LOCATION.asString(), URI + user.getID());
 			} else {

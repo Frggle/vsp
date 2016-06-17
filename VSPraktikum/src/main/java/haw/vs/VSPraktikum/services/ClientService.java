@@ -40,7 +40,7 @@ public class ClientService {
 				}
 			} else {
 				res.status(HttpStatus.BAD_REQUEST_400);
-				return "query param required";
+				return clientMap.toString();
 			}
 		});
 		
